@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cuentas',
 ]
 
 MIDDLEWARE = [
@@ -114,4 +115,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+TEMPLATES[0]['DIRS'] = [BASE_DIR/'templates']
+
+LOGIN_REDIRECT_URL='/admin-panel/'
+
+LOGOUT_REDIRECT_URL='/login/'
+
+STATICFILES_DIRS = [BASE_DIR/'static',]
