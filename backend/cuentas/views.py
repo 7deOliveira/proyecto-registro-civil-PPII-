@@ -11,7 +11,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect('/admin-panel/')
+            return redirect('admin_panel')
         else:
             return render(request, 'login.html', {'error': 'Usuario o contraseña incorrectos'})
 
@@ -25,4 +25,4 @@ def admin_panel(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('/login/')
+    return redirect('login')

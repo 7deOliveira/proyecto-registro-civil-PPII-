@@ -119,8 +119,10 @@ STATIC_URL = '/static/'
 
 TEMPLATES[0]['DIRS'] = [BASE_DIR/'templates']
 
-LOGIN_REDIRECT_URL='/admin-panel/'
+LOGIN_REDIRECT_URL='admin_panel'
 
-LOGOUT_REDIRECT_URL='/login/'
+LOGOUT_REDIRECT_URL='login'
+
+LOGOUT_URL='login'
 
 STATICFILES_DIRS = [BASE_DIR/'static',]

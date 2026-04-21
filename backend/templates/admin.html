@@ -65,9 +65,10 @@
       <div class="adm-user-avatar"><i class="bi bi-person-fill" style="font-size:15px;"></i></div>
       <span id="adm-current-user" style="font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
     </div>
-    <button class="adm-btn-logout btn-logout-global">
-      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-    </button>
+    <form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Cerrar sesión</button>
+</form>
   </div>
 </div>
 
