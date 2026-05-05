@@ -84,7 +84,7 @@ const Auth = {
 
   logout() {
     localStorage.removeItem(STORAGE_KEYS.SESSION);
-    window.location.href = 'login.html';
+    window.location.href = '/login/';
   },
 
   isLogged() {
@@ -100,7 +100,7 @@ const Auth = {
   // Guard: redirige si no está logueado
   guard() {
     if (!Auth.isLogged()) {
-      window.location.href = 'login.html';
+      window.location.href = '/login/';
     }
   }
 };
@@ -582,7 +582,7 @@ function initLogin() {
   if (!document.getElementById('login-form')) return;
 
   // Si ya está logueado, ir directo al admin
-  if (Auth.isLogged()) { window.location.href = 'admin.html'; return; }
+  if (Auth.isLogged()) { window.location.href = '/admin-panel/'; return; }
 
   document.getElementById('login-form').addEventListener('submit', e => {
     e.preventDefault();
@@ -597,7 +597,7 @@ function initLogin() {
 
     if (Auth.check(email, pass)) {
       Auth.login(email);
-      window.location.href = 'admin.html';
+      window.location.href = '/admin-panel/';
     } else {
       errEl.textContent   = 'Credenciales incorrectas. Verificá tu email y contraseña.';
       errEl.style.display = 'block';
@@ -615,7 +615,7 @@ function initAdmin() {
   if (!document.querySelector('.admin-body')) return;
 
   // Guard de autenticación
-  Auth.guard();
+  /* Auth.guard(); */
 
   // Seed datos
   Store.initAll();

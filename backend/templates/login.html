@@ -181,9 +181,9 @@
     <!-- Formulario -->
     <div class="login-body">
 
-      <div id="login-error" class="login-error hidden">
+      <div id="login-error" class="login-error {% if not error %}hidden{% endif %}">
         <i class="bi bi-exclamation-circle-fill"></i>
-        <span id="login-error-msg">Credenciales incorrectas.</span>
+        <span>{% if error %}{{ error }}{% else %}Credenciales incorrectas.{% endif %}</span>
       </div>
 
       <form method="POST" action="{% url 'login' %}" id="login-form" autocomplete="off"  novalidate>
@@ -213,7 +213,7 @@
           </label>
           <div class="input-wrap">
             <i class="bi bi-lock input-icon"></i>
-            <input type="password" name="password" class="form-control-login"
+            <input type="password" name="password" id="login-pass" class="form-control-login"
               placeholder="••••••••" autocomplete="current-password" required/>
             <button type="button" class="toggle-pass" id="toggle-pass" aria-label="Mostrar contraseña">
               <i class="bi bi-eye" id="eye-icon"></i>
@@ -232,14 +232,14 @@
   </div>
 
   <div class="login-back">
-    <a href="index.html">
+    <a href="{% url 'login' %}">
       <i class="bi bi-arrow-left"></i> Volver al sitio público
     </a>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="admin.js"></script>
+<!--<script src="admin.js"></script>-->
 <script>
   // Toggle ver/ocultar contraseña
   document.getElementById('toggle-pass')?.addEventListener('click', function() {

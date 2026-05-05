@@ -3,6 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('admin_panel')
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -26,3 +29,6 @@ def admin_panel(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+def inicio(request):
+    return render(request,'index-1.html')

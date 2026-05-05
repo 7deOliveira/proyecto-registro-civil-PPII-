@@ -22,7 +22,7 @@
       rel="stylesheet"
     />
     <!-- CSS propio -->
-    <link rel="stylesheet" href="{% static 'css/style-1.css' % }" />
+    <link rel="stylesheet" href="{% static 'css/style-1.css' %}" />
   </head>
   <body>
     <div class="page-wrapper">
@@ -30,12 +30,12 @@
       NAVBAR
   ══════════════════════════════════════════ -->
       <header class="navbar-rc">
-        <a href="index.html" class="logo-rc" title="Registro Civil">RC</a>
+        <a href="{% url 'inicio' %}" class="logo-rc" title="Registro Civil">RC</a>
 
         <nav class="nav-links">
-          <a href="index.html" class="active">Inicio</a>
-          <a href="tramites.html">Trámites</a>
-          <a href="sedes.html">Sedes</a>
+          <a href="{% url 'inicio' %}" class="active">Inicio</a>
+          <a href="tramites.html">Trámites</a> / <!--LUEGO CAMBIAR POR {% url 'tramites' %}-->
+          <a href="sedes.html">Sedes</a> <!--LUEGO CAMBIAR POR {% url 'sedes' %}-->
         </nav>
 
         <div class="logo-sde">
