@@ -8,8 +8,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="js/admin.js"/>
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css"/>
 </head>
 <body class="admin-body">
 
@@ -21,15 +20,15 @@
     <button id="adm-menu-toggle" style="background:none;border:none;font-size:22px;color:#555;cursor:pointer;display:none;">
       <i class="bi bi-list"></i>
     </button>
-    <!-- Logo RC imagen en lugar de círculo de texto -->
-    <img src="img/1003424207-removebg-preview.png" alt="RC" style="width:34px;height:34px;border-radius:50%;object-fit:contain;flex-shrink:0;"/>
+    <img src="img/1003424207-removebg-preview.png" alt="RC"
+         style="width:34px;height:34px;border-radius:50%;object-fit:contain;flex-shrink:0;"/>
     <div class="adm-brand-text">Registro Civil<span>Panel Admin</span></div>
   </div>
-
   <div class="adm-topbar-right">
     <div class="adm-user-badge">
       <div class="adm-user-avatar"><i class="bi bi-person-fill" style="font-size:15px;"></i></div>
-      <span id="adm-current-user" style="font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <span id="adm-current-user"
+            style="font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
     </div>
     <button class="adm-btn-logout btn-logout-global">
       <i class="bi bi-box-arrow-right"></i> Cerrar sesión
@@ -74,10 +73,10 @@
   </div>
 </aside>
 
-<!-- ══ MAIN CONTENT ══ -->
+<!-- ══ MAIN ══ -->
 <main class="adm-main">
 
-  <!-- ─── SECCIÓN TURNOS ─── -->
+  <!-- ─── GESTIÓN DE TURNOS ─── -->
   <section id="sec-turnos" class="adm-section active">
     <div class="adm-page-header">
       <h2><i class="bi bi-calendar2-check"></i> Gestión de Turnos</h2>
@@ -86,29 +85,34 @@
       </button>
     </div>
 
+    <!-- Stat cards: layout vertical, texto siempre dentro del cuadro -->
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-3">
         <div class="adm-stat-card">
           <div class="adm-stat-icon blue"><i class="bi bi-calendar2"></i></div>
-          <div><div class="adm-stat-value" id="stat-total-turnos">0</div><div class="adm-stat-label">Total turnos</div></div>
+          <div class="adm-stat-value" id="stat-total-turnos">0</div>
+          <div class="adm-stat-label">Total de turnos</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="adm-stat-card">
           <div class="adm-stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
-          <div><div class="adm-stat-value" id="stat-pendientes">0</div><div class="adm-stat-label">Pendientes</div></div>
+          <div class="adm-stat-value" id="stat-pendientes">0</div>
+          <div class="adm-stat-label">Pendientes</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="adm-stat-card">
           <div class="adm-stat-icon green"><i class="bi bi-check-circle"></i></div>
-          <div><div class="adm-stat-value" id="stat-asistio">0</div><div class="adm-stat-label">Asistieron</div></div>
+          <div class="adm-stat-value" id="stat-asistio">0</div>
+          <div class="adm-stat-label">Asistieron</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="adm-stat-card">
           <div class="adm-stat-icon red"><i class="bi bi-x-circle"></i></div>
-          <div><div class="adm-stat-value" id="stat-cancelado">0</div><div class="adm-stat-label">No asistieron/Cancelados</div></div>
+          <div class="adm-stat-value" id="stat-cancelado">0</div>
+          <div class="adm-stat-label">No asistieron / Cancelados</div>
         </div>
       </div>
     </div>
@@ -118,7 +122,7 @@
         <h5><i class="bi bi-table"></i> Listado de turnos</h5>
         <div class="adm-filters">
           <input type="text" class="adm-filter-input" id="filtro-turno"
-            placeholder="&#xe61d; Buscar por nombre, DNI…" style="min-width:200px;"/>
+            placeholder="Buscar nombre, DNI, mail…" style="min-width:200px;"/>
           <select class="adm-filter-input" id="filtro-tramite" style="min-width:150px;">
             <option value="">Todos los trámites</option>
             <option>Nacimiento</option>
@@ -132,19 +136,26 @@
         <table class="adm-table">
           <thead>
             <tr>
-              <th>N°</th><th>Fecha</th><th>Hora</th><th>Nombre</th>
-              <th>DNI</th><th>Trámite</th><th>Estado</th><th></th>
+              <th>N°</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Mail</th><!-- ← NUEVA COLUMNA -->
+              <th>Trámite</th>
+              <th>Estado</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="turnos-tbody">
-            <tr><td colspan="8" class="text-center py-4 text-muted">Cargando…</td></tr>
+            <tr><td colspan="9" class="text-center py-4 text-muted">Cargando…</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </section>
 
-  <!-- ─── SECCIÓN USUARIOS ─── -->
+  <!-- ─── GESTIÓN DE USUARIOS ─── -->
   <section id="sec-usuarios" class="adm-section">
     <div class="adm-page-header">
       <h2><i class="bi bi-people-fill"></i> Gestión de Usuarios</h2>
@@ -152,16 +163,15 @@
         <i class="bi bi-person-plus-fill"></i> Nuevo usuario
       </button>
     </div>
-
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-3">
         <div class="adm-stat-card">
           <div class="adm-stat-icon red"><i class="bi bi-person-fill"></i></div>
-          <div><div class="adm-stat-value" id="stat-total-usuarios">0</div><div class="adm-stat-label">Total usuarios</div></div>
+          <div class="adm-stat-value" id="stat-total-usuarios">0</div>
+          <div class="adm-stat-label">Total usuarios</div>
         </div>
       </div>
     </div>
-
     <div class="adm-card">
       <div class="adm-card-header">
         <h5><i class="bi bi-person-lines-fill"></i> Listado de usuarios</h5>
@@ -179,7 +189,7 @@
     </div>
   </section>
 
-  <!-- ─── SECCIÓN NOTICIAS ─── -->
+  <!-- ─── GESTIÓN DE NOTICIAS ─── -->
   <section id="sec-noticias" class="adm-section">
     <div class="adm-page-header">
       <h2><i class="bi bi-newspaper"></i> Gestión de Noticias</h2>
@@ -188,21 +198,65 @@
       </button>
     </div>
 
-    <div class="row g-3 mb-4">
+    <!-- Stats noticias -->
+    <div class="row g-3 mb-3">
       <div class="col-6 col-md-3">
-        <div class="adm-stat-sm">
-          <div class="val" id="stat-total-noticias">0</div>
-          <div class="lbl">Noticias publicadas</div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-icon green"><i class="bi bi-check2-circle"></i></div>
+          <div class="adm-stat-value" id="stat-n-vigentes">0</div>
+          <div class="adm-stat-label">Vigentes</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="adm-stat-card">
+          <div class="adm-stat-icon yellow"><i class="bi bi-clock-history"></i></div>
+          <div class="adm-stat-value" id="stat-n-pendientes">0</div>
+          <div class="adm-stat-label">Pendientes aprobación</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="adm-stat-card">
+          <div class="adm-stat-icon blue"><i class="bi bi-archive"></i></div>
+          <div class="adm-stat-value" id="stat-n-vencidas">0</div>
+          <div class="adm-stat-label">Vencidas</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="adm-stat-card">
+          <div class="adm-stat-icon red"><i class="bi bi-newspaper"></i></div>
+          <div class="adm-stat-value" id="stat-total-noticias">0</div>
+          <div class="adm-stat-label">Total historial</div>
         </div>
       </div>
     </div>
 
+    <!-- Filtros por estado (tabs) -->
+    <div class="noticia-filter-tabs" id="noticia-filter-tabs">
+      <button class="noticia-tab active" data-filter="todas">
+        <i class="bi bi-list-ul"></i> Todas
+        <span class="tab-count" id="tab-count-todas">0</span>
+      </button>
+      <button class="noticia-tab" data-filter="vigente">
+        <i class="bi bi-check2-circle"></i> Vigentes
+        <span class="tab-count" id="tab-count-vigente">0</span>
+      </button>
+      <button class="noticia-tab" data-filter="pendiente">
+        <i class="bi bi-clock-history"></i> Pendientes
+        <span class="tab-count" id="tab-count-pendiente">0</span>
+      </button>
+      <button class="noticia-tab" data-filter="vencida">
+        <i class="bi bi-archive"></i> Vencidas
+        <span class="tab-count" id="tab-count-vencida">0</span>
+      </button>
+    </div>
+
+    <!-- Grilla de noticias -->
     <div class="row g-3" id="noticias-admin-grid"></div>
   </section>
 
 </main>
 
-<!-- Modal Turno -->
+<!-- ══ MODAL TURNO ══ -->
 <div class="modal fade" id="modal-turno" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -253,7 +307,14 @@
                 <input type="text" name="turno-dni" class="adm-form-control" placeholder="Ej: 32456789" required/>
               </div>
             </div>
+            <!-- NUEVO: Mail -->
             <div class="col-6">
+              <div class="adm-form-group">
+                <label>Correo electrónico</label>
+                <input type="email" name="turno-mail" class="adm-form-control" placeholder="correo@ejemplo.com"/>
+              </div>
+            </div>
+            <div class="col-12">
               <div class="adm-form-group">
                 <label>Estado</label>
                 <select name="turno-estado" class="adm-form-control">
@@ -273,7 +334,7 @@
   </div>
 </div>
 
-<!-- Modal Usuario (con permisos) -->
+<!-- ══ MODAL USUARIO ══ -->
 <div class="modal fade" id="modal-usuario" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -314,30 +375,28 @@
               </div>
             </div>
           </div>
-
-          <!-- Sección de permisos -->
           <div class="adm-form-group mt-2" id="permisos-section">
             <label style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">
               <i class="bi bi-shield-check" style="color:var(--adm-red);font-size:15px;"></i>
               Permisos de acceso al sistema
             </label>
             <div class="permisos-grid">
-              <label class="perm-item" id="perm-turnos-item">
+              <label class="perm-item">
                 <input type="checkbox" name="perm-turnos" id="perm-turnos" checked/>
                 <span><i class="bi bi-calendar2-check"></i> Gestión de Turnos</span>
               </label>
-              <label class="perm-item" id="perm-noticias-item">
+              <label class="perm-item">
                 <input type="checkbox" name="perm-noticias" id="perm-noticias" checked/>
                 <span><i class="bi bi-newspaper"></i> Gestión de Noticias</span>
               </label>
-              <label class="perm-item" id="perm-usuarios-item">
+              <label class="perm-item">
                 <input type="checkbox" name="perm-usuarios" id="perm-usuarios"/>
                 <span><i class="bi bi-people-fill"></i> Gestión de Usuarios (crear/editar operadores)</span>
               </label>
             </div>
             <p class="pass-hint" style="margin-top:6px;">
               <i class="bi bi-info-circle"></i>
-              Los <strong>Administradores</strong> tienen acceso total automáticamente. Los operadores sin permiso de Usuarios no pueden crear ni gestionar cuentas.
+              Los <strong>Administradores</strong> tienen acceso total automáticamente.
             </p>
           </div>
         </form>
@@ -350,7 +409,7 @@
   </div>
 </div>
 
-<!-- Modal Noticia -->
+<!-- ══ MODAL NOTICIA (imagen + vigencia + flujo aprobación) ══ -->
 <div class="modal fade" id="modal-noticia-form" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -361,45 +420,110 @@
       <div class="modal-body p-4">
         <form id="form-noticia" novalidate>
           <input type="hidden" name="noticia-id"/>
+          <!-- Base64 de la imagen elegida -->
+          <input type="hidden" name="noticia-imagen-b64" id="noticia-imagen-b64"/>
+
+          <!-- Título -->
           <div class="adm-form-group">
             <label>Título <span style="color:var(--adm-red)">*</span></label>
-            <input type="text" name="noticia-titulo" class="adm-form-control" placeholder="Título de la noticia" required/>
+            <input type="text" name="noticia-titulo" class="adm-form-control"
+              placeholder="Título de la noticia" required/>
           </div>
+
+          <!-- Fecha + Categoría -->
           <div class="row g-3">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <div class="adm-form-group">
-                <label>Fecha</label>
+                <label>Fecha de publicación</label>
                 <input type="date" name="noticia-fecha" class="adm-form-control"/>
               </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <div class="adm-form-group">
-                <label>Categoría / Tag</label>
-                <input type="text" name="noticia-tag" class="adm-form-control" placeholder="Ej: Institucional"/>
+                <label>Categoría</label>
+                <input type="text" name="noticia-tag" class="adm-form-control"
+                  placeholder="Ej: Institucional, Trámites…"/>
               </div>
             </div>
           </div>
+
+          <!-- Imagen (JPG/PNG) -->
           <div class="adm-form-group">
-            <label>Ícono Bootstrap (clase)</label>
-            <select name="noticia-icono" class="adm-form-control">
-              <option value="bi-newspaper">📰 bi-newspaper</option>
-              <option value="bi-megaphone-fill">📢 bi-megaphone-fill</option>
-              <option value="bi-file-earmark-text-fill">📄 bi-file-earmark-text-fill</option>
-              <option value="bi-bell-fill">🔔 bi-bell-fill</option>
-              <option value="bi-info-circle-fill">ℹ️  bi-info-circle-fill</option>
-              <option value="bi-calendar-event-fill">📅 bi-calendar-event-fill</option>
-            </select>
+            <label>
+              Imagen de portada
+              <small style="color:var(--adm-muted);font-weight:400;"> — JPG o PNG, máx. 2 MB</small>
+            </label>
+            <input type="file" id="noticia-imagen-file" accept="image/jpeg,image/png"
+              class="adm-form-control"/>
+            <div class="img-preview-wrap" id="img-preview-wrap">
+              <img id="noticia-imagen-thumb" class="img-preview-thumb" src="" alt="Vista previa"/>
+              <div class="img-preview-info">
+                <div id="img-preview-nombre" style="font-weight:600;color:var(--adm-text);margin-bottom:4px;"></div>
+                <div id="img-preview-size"></div>
+                <button type="button" id="btn-clear-imagen"
+                  style="margin-top:6px;background:none;border:1px solid #dc3545;color:#dc3545;
+                         border-radius:5px;padding:3px 10px;font-size:12px;cursor:pointer;">
+                  <i class="bi bi-x"></i> Quitar imagen
+                </button>
+              </div>
+            </div>
           </div>
+
+          <!-- Vigencia -->
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="adm-form-group">
+                <label>
+                  <i class="bi bi-calendar-range" style="color:var(--adm-red);"></i>
+                  Vigencia — desde
+                </label>
+                <input type="date" name="noticia-vigencia-inicio" class="adm-form-control"/>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="adm-form-group">
+                <label>
+                  <i class="bi bi-calendar-x" style="color:var(--adm-muted);"></i>
+                  Vigencia — hasta
+                </label>
+                <input type="date" name="noticia-vigencia-fin" class="adm-form-control"/>
+              </div>
+            </div>
+          </div>
+          <p class="pass-hint" style="margin-top:-6px;margin-bottom:14px;">
+            <i class="bi bi-info-circle"></i>
+            La noticia sólo será visible en el sitio público dentro del período de vigencia indicado.
+            Al vencer la fecha de fin, pasa automáticamente a estado <strong>Vencida</strong>.
+          </p>
+
+          <!-- Contenido -->
           <div class="adm-form-group">
             <label>Contenido <span style="color:var(--adm-red)">*</span></label>
             <textarea name="noticia-cuerpo" class="adm-form-control" rows="5"
               placeholder="Escribí el contenido completo de la noticia…" required></textarea>
           </div>
+
+          <!-- Info de aprobación (se muestra al editar) -->
+          <div id="aprobacion-info-block" style="display:none;" class="adm-form-group">
+            <label>
+              <i class="bi bi-shield-check" style="color:var(--adm-green);"></i>
+              Estado de aprobación
+            </label>
+            <div class="aprobaciones-info" id="aprobaciones-detalle">
+              <!-- rellenado por JS -->
+            </div>
+            <p class="pass-hint" style="margin-top:6px;">
+              <i class="bi bi-people-fill"></i>
+              Se requieren <strong>2 administradores distintos</strong> para que la noticia pase a estado <strong>Vigente</strong>.
+            </p>
+          </div>
         </form>
       </div>
       <div class="modal-footer" style="gap:10px;">
         <button class="btn-adm-secondary" data-bs-dismiss="modal"><i class="bi bi-x"></i> Cancelar</button>
-        <button class="btn-adm-primary" id="btn-guardar-noticia"><i class="bi bi-check-lg"></i> Publicar noticia</button>
+        <button class="btn-adm-primary" id="btn-guardar-noticia">
+          <i class="bi bi-send"></i> Guardar y enviar a aprobación
+        </button>
       </div>
     </div>
   </div>
@@ -408,40 +532,80 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/admin.js"></script>
 <script>
-  // Sincronizar checkboxes de permisos con el select de rol
-  document.getElementById('user-rol-select')?.addEventListener('change', function() {
-    const isAdmin = this.value === 'admin';
-    ['perm-turnos','perm-noticias','perm-usuarios'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.disabled = isAdmin;
-      if (isAdmin) el.checked = true;
-    });
-    document.getElementById('permisos-section').style.opacity = isAdmin ? '.6' : '1';
+/* ── Permisos select rol ── */
+document.getElementById('user-rol-select')?.addEventListener('change', function() {
+  const isAdmin = this.value === 'admin';
+  ['perm-turnos','perm-noticias','perm-usuarios'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.disabled = isAdmin;
+    if (isAdmin) el.checked = true;
   });
+  document.getElementById('permisos-section').style.opacity = isAdmin ? '.6' : '1';
+});
 
-  // Actualizar badges
-  function updateBadges() {
-    try {
-      const t = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
-      const u = JSON.parse(localStorage.getItem('rc_usuarios') || '[]');
-      const n = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
-      const pendT = t.filter(x => x.estado === 'Pendiente').length;
-      const bt = document.getElementById('nav-badge-turnos');
-      const bu = document.getElementById('nav-badge-usuarios');
-      const bn = document.getElementById('nav-badge-noticias');
-      if (bt) bt.textContent = pendT || t.length;
-      if (bu) bu.textContent = u.length;
-      if (bn) bn.textContent = n.length;
-    } catch {}
+/* ── Upload imagen noticia ── */
+document.getElementById('noticia-imagen-file')?.addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert('La imagen supera los 2 MB. Elegí una imagen más pequeña.');
+    this.value = '';
+    return;
   }
-  window.addEventListener('storage', updateBadges);
-  setTimeout(updateBadges, 500);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('noticia-imagen-b64').value = e.target.result;
+    document.getElementById('noticia-imagen-thumb').src = e.target.result;
+    document.getElementById('img-preview-nombre').textContent = file.name;
+    document.getElementById('img-preview-size').textContent =
+      (file.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('img-preview-wrap').classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+});
 
-  if (window.innerWidth <= 767) {
-    const btn = document.getElementById('adm-menu-toggle');
-    if (btn) btn.style.display = 'inline-flex';
-  }
+document.getElementById('btn-clear-imagen')?.addEventListener('click', function() {
+  document.getElementById('noticia-imagen-b64').value = '';
+  document.getElementById('noticia-imagen-file').value = '';
+  document.getElementById('noticia-imagen-thumb').src = '';
+  document.getElementById('img-preview-wrap').classList.remove('visible');
+});
+
+/* ── Tabs filtro noticias ── */
+document.getElementById('noticia-filter-tabs')?.addEventListener('click', function(e) {
+  const tab = e.target.closest('.noticia-tab');
+  if (!tab) return;
+  document.querySelectorAll('.noticia-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  if (window.ModNoticias) ModNoticias.render(tab.dataset.filter);
+});
+
+/* ── Badges sidebar ── */
+function updateBadges() {
+  try {
+    const t = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
+    const u = JSON.parse(localStorage.getItem('rc_usuarios') || '[]');
+    const n = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
+    const pendT = t.filter(x => x.estado === 'Pendiente').length;
+    const pendN = n.filter(x => x.estado_noticia === 'pendiente').length;
+    const el = id => document.getElementById(id);
+    if (el('nav-badge-turnos'))   el('nav-badge-turnos').textContent   = pendT || t.length;
+    if (el('nav-badge-usuarios')) el('nav-badge-usuarios').textContent = u.length;
+    if (el('nav-badge-noticias')) el('nav-badge-noticias').textContent = pendN || n.length;
+  } catch {}
+}
+window.addEventListener('storage', updateBadges);
+setTimeout(updateBadges, 600);
+
+/* ── Mobile sidebar toggle ── */
+if (window.innerWidth <= 767) {
+  const btn = document.getElementById('adm-menu-toggle');
+  if (btn) btn.style.display = 'inline-flex';
+}
+document.getElementById('adm-menu-toggle')?.addEventListener('click', () => {
+  document.querySelector('.adm-sidebar')?.classList.toggle('open');
+});
 </script>
 </body>
 </html>
