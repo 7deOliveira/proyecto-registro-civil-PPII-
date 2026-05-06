@@ -124,3 +124,12 @@ LOGIN_REDIRECT_URL='/admin-panel/'
 LOGOUT_REDIRECT_URL='/login/'
 
 STATICFILES_DIRS = [BASE_DIR/'static',]
+
+# La sesión expira cuando se cierra el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Tiempo máximo de sesión en segundos (8 horas)
+SESSION_COOKIE_AGE = 60 * 60 * 8
+
+# Cada request reinicia el contador
+SESSION_SAVE_EVERY_REQUEST = True
