@@ -56,11 +56,10 @@ const Store = {
   init(key, def) { if (!localStorage.getItem(key)) Store.set(key, def); },
 
   // Inicializar todos los datos si no existen
-  initAll() {
+initAll() {
     Store.init(STORAGE_KEYS.TURNOS,   SEED_TURNOS);
     Store.init(STORAGE_KEYS.NOTICIAS, SEED_NOTICIAS);
-    Store.init(STORAGE_KEYS.USUARIOS, SEED_USUARIOS);
-  },
+},
 
   nextId(arr) { return arr.length ? Math.max(...arr.map(x => x.id)) + 1 : 1; }
 };
@@ -230,9 +229,9 @@ const ModTurnos = {
     // Evento cambio de estado
     tbody.querySelectorAll('.estado-select').forEach(sel => {
       sel.addEventListener('change', e => {
-        const id     = parseInt(e.target.dataset.turnoId);
+        const id = parseInt(e.target.dataset.turnoId);
         const turnos = this.load();
-        const idx    = turnos.findIndex(t => t.id === id);
+        const idx = turnos.findIndex(t => t.id === id);
         if (idx !== -1) {
           turnos[idx].estado = e.target.value;
           this.save(turnos);
@@ -331,15 +330,18 @@ const ModTurnos = {
    ════════════════════════════════════════════════ */
 
 const ModUsuarios = {
-  load()    { return Store.get(STORAGE_KEYS.USUARIOS) || []; },
-  save(arr) { Store.set(STORAGE_KEYS.USUARIOS, arr); },
+  async cargar() {
+    const r = await fetch('/api/usuarios/');
+    const data = await r.json();
+    return data.usuarios || [];
+  },
 
-  render() {
-    const usuarios = this.load();
-    const tbody    = document.getElementById('usuarios-tbody');
+  render(usuarios) {
+    const tbody = document.getElementById('usuarios-tbody');
     if (!tbody) return;
 
-    document.getElementById('stat-total-usuarios') && (document.getElementById('stat-total-usuarios').innerText = usuarios.length);
+    const stat = document.getElementById('stat-total-usuarios');
+    if (stat) stat.innerText = usuarios.length;
 
     if (usuarios.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados.</td></tr>`;
@@ -350,109 +352,145 @@ const ModUsuarios = {
       <tr data-uid="${u.id}">
         <td><strong>${u.nombre}</strong></td>
         <td>${u.email}</td>
-        <td><span class="badge-estado badge-${u.rol}">${u.rol.charAt(0).toUpperCase()+u.rol.slice(1)}</span></td>
+        <td><span class="badge-estado ${u.rol === 'super_admin' ? 'badge-admin' : 'badge-operador'}">
+          ${u.rol === 'super_admin' ? 'Super Admin' : 'Operador'}
+        </span></td>
+        <td><span class="badge-estado ${u.activo ? 'badge-asistio' : 'badge-noasistio'}">
+          ${u.activo ? 'Activo' : 'Inactivo'}
+        </span></td>
         <td>
-          <button class="btn-adm-icon edit" data-edit-user="${u.id}" title="Editar">
+          <button class="btn-adm-icon edit" data-edit-user="${u.id}"
+            data-nombre="${u.nombre}" data-email="${u.email}" data-rol="${u.rol}" title="Editar">
             <i class="bi bi-pencil-square"></i>
           </button>
-          <button class="btn-adm-icon trash" data-delete-user="${u.id}" title="Eliminar"
-            ${u.email === _CV[0] ? 'disabled title="No se puede eliminar el admin principal"' : ''}>
-            <i class="bi bi-trash3"></i>
+          <button class="btn-adm-icon trash" data-toggle-user="${u.id}" data-activo="${u.activo}" title="${u.activo ? 'Desactivar' : 'Activar'}">
+            <i class="bi bi-${u.activo ? 'person-slash' : 'person-check'}"></i>
           </button>
         </td>
       </tr>`).join('');
 
+    // Botón editar
     tbody.querySelectorAll('[data-edit-user]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const u = this.load().find(x => x.id === parseInt(btn.dataset.editUser));
-        if (u) this.openModal(u);
+        this.openModal({
+          id:btn.dataset.editUser,
+          nombre:btn.dataset.nombre,
+          email:btn.dataset.email,
+          rol:btn.dataset.rol,
+        });
       });
     });
 
-    tbody.querySelectorAll('[data-delete-user]').forEach(btn => {
+    // Botón activar/desactivar
+    tbody.querySelectorAll('[data-toggle-user]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const id = parseInt(btn.dataset.deleteUser);
-        const u  = this.load().find(x => x.id === id);
-        if (u?.email === _CV[0]) { Toast.show('No se puede eliminar el administrador principal', 'error'); return; }
-        if (!confirm(`¿Eliminar al usuario "${u?.nombre}"?`)) return;
-        this.save(this.load().filter(x => x.id !== id));
-        Toast.show('Usuario eliminado', 'warning');
-        this.render();
+        const id = btn.dataset.toggleUser;
+        const activo = btn.dataset.activo === 'true';
+        this.toggleEstado(id, activo);
       });
     });
   },
 
   openModal(usuario = null) {
     const titulo = document.getElementById('modal-user-titulo');
-    const form   = document.getElementById('form-usuario');
+    const form = document.getElementById('form-usuario');
     const passHelp = document.getElementById('pass-help');
     if (!form) return;
 
     if (usuario) {
-      titulo.textContent = 'Editar Usuario';
-      form['user-id'].value     = usuario.id;
-      form['user-nombre'].value = usuario.nombre;
-      form['user-email'].value  = usuario.email;
-      form['user-rol'].value    = usuario.rol;
-      form['user-pass'].value   = '';
+      titulo.textContent  ='Editar Usuario';
+      form['user-id'].value =usuario.id;
+      form['user-nombre'].value =usuario.nombre;
+      form['user-email'].value =usuario.email;
+      form['user-rol'].value =usuario.rol;
+      form['user-pass'].value = '';
       form['user-pass'].placeholder = 'Dejar vacío para no cambiar';
-      if (passHelp) passHelp.textContent = 'Dejar vacío para mantener la contraseña actual.';
-
-      // Deshabilitar email del admin principal
-      form['user-email'].disabled = (usuario.email === _CV[0]);
+      if (passHelp) passHelp.textContent = 'Dejá vacío para mantener la contraseña actual.';
     } else {
       titulo.textContent = 'Nuevo Usuario';
       form.reset();
       form['user-id'].value = '';
-      form['user-email'].disabled = false;
       form['user-pass'].placeholder = 'Contraseña';
       if (passHelp) passHelp.textContent = 'Requerida para nuevos usuarios.';
     }
+
     new bootstrap.Modal(document.getElementById('modal-usuario')).show();
   },
 
-  handleFormSave() {
-    const form  = document.getElementById('form-usuario');
+  async handleFormSave() {
+    const form   = document.getElementById('form-usuario');
     if (!form) return;
-    const id    = form['user-id'].value ? parseInt(form['user-id'].value) : null;
+
+    const id = form['user-id'].value;
     const nombre = form['user-nombre'].value.trim();
-    const email  = form['user-email'].value.trim();
-    const rol    = form['user-rol'].value;
-    const pass   = form['user-pass'].value;
+    const email = form['user-email'].value.trim();
+    const rol = form['user-rol'].value;
+    const password = form['user-pass'].value.trim();
 
     if (!nombre || !email) { Toast.show('Nombre y email son requeridos', 'error'); return; }
-    if (!id && !pass)       { Toast.show('La contraseña es requerida para nuevos usuarios', 'error'); return; }
+    if (!id && !password)  { Toast.show('La contraseña es requerida para nuevos usuarios', 'error'); return; }
 
-    const usuarios = this.load();
+    const url = id ? `/api/usuarios/${id}/editar/` : '/api/usuarios/crear/';
+    const body = { nombre, email, rol };
+    if (password) body.password = password;
 
-    // Verificar email duplicado en creación
-    if (!id && usuarios.some(u => u.email === email)) {
-      Toast.show('Ya existe un usuario con ese email', 'error'); return;
-    }
+    try {
+      const r = await fetch(url, {
+        method:'POST',
+        headers: {
+          'Content-Type':'application/json',
+          'X-CSRFToken':this.getCookie('csrftoken'),
+        },
+        body:JSON.stringify(body),
+      });
+      const data = await r.json();
 
-    if (id) {
-      const idx = usuarios.findIndex(u => u.id === id);
-      if (idx !== -1) {
-        usuarios[idx].nombre = nombre;
-        usuarios[idx].rol    = rol;
-        if (!form['user-email'].disabled) usuarios[idx].email = email;
-        if (pass) usuarios[idx].password = btoa(pass);
-      }
-      Toast.show('Usuario actualizado correctamente', 'success');
-    } else {
-      usuarios.push({ id: Store.nextId(usuarios), nombre, email, rol, password: btoa(pass) });
-      Toast.show('Usuario creado correctamente', 'success');
-    }
+      if (data.error) { Toast.show(data.error, 'error'); return; }
 
-    this.save(usuarios);
-    bootstrap.Modal.getInstance(document.getElementById('modal-usuario'))?.hide();
-    this.render();
+      bootstrap.Modal.getInstance(document.getElementById('modal-usuario'))?.hide();
+      Toast.show(id ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente', 'success');
+      await this.init();
+
+    } catch { Toast.show('Error al guardar usuario.', 'error'); }
   },
 
-  init() {
-    document.getElementById('btn-nuevo-usuario')?.addEventListener('click', () => this.openModal());
-    document.getElementById('btn-guardar-usuario')?.addEventListener('click', () => this.handleFormSave());
-    this.render();
+  async toggleEstado(id, activo) {
+    const accion = activo ? 'desactivar' : 'reactivar';
+    if (!confirm(`¿Querés ${accion} este usuario?`)) return;
+
+    try {
+      const r = await fetch(`/api/usuarios/${id}/desactivar/`, {
+        method:'POST',
+        headers: { 'X-CSRFToken': this.getCookie('csrftoken') },
+      });
+      const data = await r.json();
+
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+      Toast.show(`Usuario ${data.estado} correctamente.`, 'success');
+      await this.init();
+
+    } catch { Toast.show('Error al cambiar estado.', 'error'); }
+  },
+
+  getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  },
+
+async init() {
+    const btnNuevo   = document.getElementById('btn-nuevo-usuario');
+    const btnGuardar = document.getElementById('btn-guardar-usuario');
+
+    // onclick reemplaza el handler anterior, no lo acumula
+    if (btnNuevo)   btnNuevo.onclick   = () => this.openModal();
+    if (btnGuardar) btnGuardar.onclick = () => this.handleFormSave();
+
+    const usuarios = await this.cargar();
+    this.render(usuarios);
+
+    const badge = document.getElementById('nav-badge-usuarios');
+    if (badge) badge.textContent = usuarios.length;
   }
 };
 
@@ -525,10 +563,10 @@ const ModNoticias = {
 
     if (noticia) {
       titulo.textContent = 'Editar Noticia';
-      form['noticia-id'].value     = noticia.id;
+      form['noticia-id'].value = noticia.id;
       form['noticia-titulo'].value = noticia.titulo;
       form['noticia-fecha'].value  = noticia.fecha;
-      form['noticia-tag'].value    = noticia.tag;
+      form['noticia-tag'].value = noticia.tag;
       form['noticia-icono'].value  = noticia.icono || this.ICONOS[0];
       form['noticia-cuerpo'].value = noticia.cuerpo;
     } else {
@@ -621,11 +659,13 @@ function initAdmin() {
   Store.initAll();
 
   // Mostrar usuario actual
-  const email = Auth.currentUser();
-  const userDisplay = document.getElementById('adm-current-user');
-  if (userDisplay && email) {
-    userDisplay.textContent = email.split('@')[0];
-  }
+const userDisplay = document.getElementById('adm-current-user');
+if (userDisplay) {
+    fetch('/api/usuario-actual/')
+        .then(r => r.json())
+        .then(data => { userDisplay.textContent = data.nombre || data.username; })
+        .catch(() => { userDisplay.textContent = 'Admin'; });
+}
 
   // Botón cerrar sesión
   document.querySelectorAll('.btn-logout-global').forEach(btn => {

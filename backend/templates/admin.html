@@ -63,7 +63,10 @@
   <div class="adm-topbar-right">
     <div class="adm-user-badge">
       <div class="adm-user-avatar"><i class="bi bi-person-fill" style="font-size:15px;"></i></div>
-      <span id="adm-current-user" style="font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <span id="adm-current-user">
+  {{ usuario.get_full_name|default:usuario.username }}
+  {% if es_superadmin %}<small style="color:var(--adm-red)"> · Super Admin</small>{% endif %}
+      </span>
     </div>
     <form method="POST" action="{% url 'logout' %}">
     {% csrf_token %}
@@ -85,11 +88,13 @@
       <span class="adm-nav-badge" id="nav-badge-turnos">0</span>
     </button>
 
-    <button class="adm-nav-item" data-section="usuarios">
-      <i class="bi bi-people-fill"></i>
-      <span>Gestión de Usuarios</span>
-      <span class="adm-nav-badge" id="nav-badge-usuarios">0</span>
-    </button>
+{% if es_superadmin %}
+<button class="adm-nav-item" data-section="usuarios">
+  <i class="bi bi-people-fill"></i>
+  <span>Gestión de Usuarios</span>
+  <span class="adm-nav-badge" id="nav-badge-usuarios">0</span>
+</button>
+{% endif %}
 
     <button class="adm-nav-item" data-section="noticias">
       <i class="bi bi-newspaper"></i>
@@ -208,6 +213,7 @@
   </section>
 
   <!-- ─────────────── SECCIÓN USUARIOS ─────────────── -->
+{% if es_superadmin %}
   <section id="sec-usuarios" class="adm-section">
 
     <div class="adm-page-header">
@@ -250,6 +256,7 @@
       </div>
     </div>
   </section>
+{% endif %}
 
   <!-- ─────────────── SECCIÓN NOTICIAS ─────────────── -->
   <section id="sec-noticias" class="adm-section">
@@ -402,7 +409,7 @@
       </div>
       <div class="modal-footer" style="gap:10px;">
         <button class="btn-adm-secondary" data-bs-dismiss="modal"><i class="bi bi-x"></i> Cancelar</button>
-        <button class="btn-adm-primary" id="btn-guardar-usuario"><i class="bi bi-check-lg"></i> Guardar usuario</button>
+        <button class="btn-adm-primary" id="btn-guardar-usuario" onclick="ModUsuarios.handleFormSave()"><i class="bi bi-check-lg"></i> Guardar usuario</button>
       </div>
     </div>
   </div>
@@ -468,16 +475,15 @@
 <script>
   // Actualizar badges del sidebar al cargar y al cambiar de sección
   function updateBadges() {
-    try {
-      const t = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
-      const u = JSON.parse(localStorage.getItem('rc_usuarios') || '[]');
-      const n = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
-      const pendT = t.filter(x => x.estado === 'Pendiente').length;
-      document.getElementById('nav-badge-turnos')   && (document.getElementById('nav-badge-turnos').textContent   = pendT || t.length);
-      document.getElementById('nav-badge-usuarios') && (document.getElementById('nav-badge-usuarios').textContent = u.length);
-      document.getElementById('nav-badge-noticias') && (document.getElementById('nav-badge-noticias').textContent = n.length);
-    } catch {}
-  }
+  try {
+    const t = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
+    const n = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
+    const pendT = t.filter(x => x.estado === 'Pendiente').length;
+    document.getElementById('nav-badge-turnos')   && (document.getElementById('nav-badge-turnos').textContent   = pendT || t.length);
+    // nav-badge-usuarios lo maneja ModUsuarios.init()
+    document.getElementById('nav-badge-noticias') && (document.getElementById('nav-badge-noticias').textContent = n.length);
+  } catch {}
+}
   // Actualizar badges cada vez que cambia localStorage
   window.addEventListener('storage', updateBadges);
   setTimeout(updateBadges, 500);   // después de que admin.js inicialice los datos
