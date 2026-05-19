@@ -291,23 +291,6 @@ footer a:hover { color: var(--rc-red); }
 footer a i { margin-right: 6px; }
 .footer-divider { border-color: rgba(255,255,255,.09); margin: 24px 0 14px; }
 .footer-bottom { font-size: 11px; color: #666; text-align: center; }
-
-/* ════════════════════ RESPONSIVE ════════════════════ */
-@media (max-width: 767px) {
-  body { padding: 20px 0; }
-  .page-wrapper { border-radius: 0; }
-  .page-content { padding: 16px 16px 32px; }
-  .nav-links { display: none; }
-  .carousel-rc .carousel-item { padding: 20px 44px; min-height: 118px; }
-  .carousel-text h3 { font-size: 19px; }
-  .carousel-icon-circle { width: 62px; height: 62px; font-size: 28px; }
-  .logo-ministerio { max-width: 120px; height: 34px; }
-  footer { padding: 28px 16px 18px; }
-}
-@media (max-width: 480px) {
-  .navbar-rc { padding: 0 12px; }
-  .logo-ministerio { max-width: 90px; height: 28px; }
-}
 .info-page{
 
   max-width:900px;
@@ -366,4 +349,22 @@ footer a i { margin-right: 6px; }
   justify-content:space-between;
   align-items:center;
 
+}
+
+
+/* ════════════════════ RESPONSIVE ════════════════════ */
+@media (max-width: 767px) {
+  body { padding: 20px 0; }
+  .page-wrapper { border-radius: 0; }
+  .page-content { padding: 16px 16px 32px; }
+  .nav-links { display: none; }
+  .carousel-rc .carousel-item { padding: 20px 44px; min-height: 118px; }
+  .carousel-text h3 { font-size: 19px; }
+  .carousel-icon-circle { width: 62px; height: 62px; font-size: 28px; }
+  .logo-ministerio { max-width: 120px; height: 34px; }
+  footer { padding: 28px 16px 18px; }
+}
+@media (max-width: 480px) {
+  .navbar-rc { padding: 0 12px; }
+  .logo-ministerio { max-width: 90px; height: 28px; }
 }

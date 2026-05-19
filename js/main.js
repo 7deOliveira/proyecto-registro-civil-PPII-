@@ -1,184 +1,197 @@
-/**
- * main.js — Noticias públicas con imagen
-*/
-
 function formatFecha(fecha){
 
-  if(!fecha) return "";
+    if(!fecha) return "";
 
-  const partes = fecha.split("-");
+    const partes = fecha.split("-");
 
-  if(partes.length !== 3) return fecha;
+    if(partes.length !== 3) return fecha;
 
-  const meses = [
-    "enero","febrero","marzo","abril","mayo","junio",
-    "julio","agosto","septiembre","octubre","noviembre","diciembre"
-  ];
+    const meses = [
+        "enero","febrero","marzo","abril",
+        "mayo","junio","julio","agosto",
+        "septiembre","octubre","noviembre","diciembre"
+    ];
 
-  return `${parseInt(partes[2])} de ${
-    meses[parseInt(partes[1])-1]
-  } de ${partes[0]}`;
+    return `${parseInt(partes[2])} de ${
+        meses[parseInt(partes[1]) - 1]
+    } de ${partes[0]}`;
 
 }
+
+
+let noticiasGlobal = [];
+
 
 function cargarNoticias(){
 
-  const grid =
-    document.getElementById("noticias-grid");
+    const grid =
+        document.getElementById("noticias-grid");
 
-  if(!grid) return;
+    if(!grid) return;
 
-  let noticias = [];
 
-  try{
+    noticiasGlobal =
+     (
+        JSON.parse(
+            localStorage.getItem("rc_noticias")
+        ) || []
+     )
+     .filter(noticia => noticia.estado_noticia === "vigente");
 
-    noticias = JSON.parse(
-      localStorage.getItem("rc_noticias")
-    ) || [];
 
-  }catch{
+    grid.innerHTML = "";
 
-    noticias = [];
 
-  }
+    if(noticiasGlobal.length === 0){
 
-  // SOLO VIGENTES
-  noticias = noticias.filter(
-    noticia =>
-      noticia.estado_noticia === "vigente"
-      ||
-      !noticia.estado_noticia
-  );
+        grid.innerHTML =
+            `<p>No hay noticias</p>`;
 
-  grid.innerHTML = "";
+        return;
 
-  if(noticias.length===0){
+    }
 
-    grid.innerHTML=`
-      <div class="col-12 text-center py-4">
-        No hay noticias disponibles
-      </div>
-    `;
 
-    return;
+    noticiasGlobal.forEach((noticia,index)=>{
 
-  }
+        // detecta TODOS los posibles nombres
+        const imagen =
+            noticia["noticia-imagen-b64"]
+            ||
+            noticia.imagen
+            ||
+            noticia.imagen_b64
+            ||
+            "";
 
-  noticias.slice(0,3).forEach((noticia,index)=>{
 
-    // ESTE ES EL CAMPO REAL DEL ADMIN
-    const imagen =
-      noticia["noticia-imagen-b64"] || "";
+        grid.innerHTML += `
 
-    const fecha =
-      formatFecha(noticia.fecha);
+            <div class="col-md-4">
 
-    grid.innerHTML += `
+                <div class="news-card">
 
-      <div class="col-12 col-md-4">
+                    ${
+                        imagen
 
-        <div class="news-card">
+                        ?
 
-          ${
-            imagen
-            ?
-            `<img
-              src="${imagen}"
-              class="news-thumb"
-            >`
-            :
-            `<div class="news-thumb-placeholder">
-              📰
-            </div>`
-          }
+                        `<img
+                            src="${imagen}"
+                            class="news-thumb"
+                        >`
 
-          <div class="news-body">
+                        :
 
-            <span class="news-tag">
-              ${noticia.tag || "Noticia"}
-            </span>
+                        `<div class="news-thumb-placeholder">
+                            📰
+                        </div>`
+                    }
 
-            <div class="news-title">
-              ${noticia.titulo || ""}
+                    <div class="news-body">
+
+                        <span class="news-tag">
+                            ${noticia.tag || "Noticia"}
+                        </span>
+
+                        <div class="news-title">
+                            ${noticia.titulo || ""}
+                        </div>
+
+                        <div class="news-date">
+                            ${formatFecha(
+                                noticia.fecha
+                            )}
+                        </div>
+
+                        <button
+                            class="btn-rc"
+                            onclick="abrirNoticia(${index})">
+
+                            Ver noticia
+
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <div class="news-date">
-              ${fecha}
-            </div>
+        `;
 
-            <button
-              class="btn-rc"
-              onclick="abrirNoticia(${index})">
-
-              Ver noticia
-
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
-
-  });
-
-  window.noticiasPublicas = noticias;
+    });
 
 }
+
 
 function abrirNoticia(index){
 
-  const noticia =
-    window.noticiasPublicas[index];
+    const noticia =
+        noticiasGlobal[index];
 
-  if(!noticia) return;
 
-  document.getElementById(
-    "modalNoticiaTitulo"
-  ).textContent =
-    noticia.titulo || "";
-
-  document.getElementById(
-    "modalNoticiaFecha"
-  ).textContent =
-    formatFecha(noticia.fecha);
-
-  document.getElementById(
-    "modalNoticiaCuerpo"
-  ).textContent =
-    noticia.cuerpo || "";
-
-  const imagen =
-    noticia["noticia-imagen-b64"];
-
-  const img =
     document.getElementById(
-      "modalNoticiaImagen"
-    );
+        "modalNoticiaTitulo"
+    ).textContent =
+        noticia.titulo || "";
 
-  if(imagen){
 
-    img.src = imagen;
-
-    img.style.display = "block";
-
-  }else{
-
-    img.style.display = "none";
-
-  }
-
-  new bootstrap.Modal(
     document.getElementById(
-      "modalNoticia"
-    )
-  ).show();
+        "modalNoticiaFecha"
+    ).textContent =
+        formatFecha(
+            noticia.fecha
+        );
+
+
+    document.getElementById(
+        "modalNoticiaCuerpo"
+    ).textContent =
+        noticia.cuerpo || "";
+
+
+    const imagen =
+        noticia["noticia-imagen-b64"]
+        ||
+        noticia.imagen
+        ||
+        noticia.imagen_b64
+        ||
+        "";
+
+
+    const img =
+        document.getElementById(
+            "modalNoticiaImagen"
+        );
+
+
+    if(imagen){
+
+        img.src = imagen;
+
+        img.style.display = "block";
+
+    }
+
+    else{
+
+        img.style.display = "none";
+
+    }
+
+
+    new bootstrap.Modal(
+        document.getElementById(
+            "modalNoticia"
+        )
+    ).show();
 
 }
 
+
 document.addEventListener(
-  "DOMContentLoaded",
-  cargarNoticias
+    "DOMContentLoaded",
+    cargarNoticias
 );
