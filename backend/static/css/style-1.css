@@ -475,6 +475,34 @@ footer a i { margin-right: 6px; }
   text-align: center;
 }
 
+.tramite-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: box-shadow .2s, transform .2s;
+}
+.tramite-card:hover {
+  box-shadow: 0 4px 16px rgba(200,16,46,.12);
+  transform: translateY(-2px);
+}
+.tramite-icon {
+  width: 48px; height: 48px;
+  background: rgba(200,16,46,.08);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: var(--rc-red);
+  flex-shrink: 0;
+}
+.tramite-titulo {
+  font-weight: 600;
+  font-size: 15px;
+  color: #2d3748;
+}
+
 /* ═══════════════════════════════════════════════════
   RESPONSIVE
    ═══════════════════════════════════════════════════ */

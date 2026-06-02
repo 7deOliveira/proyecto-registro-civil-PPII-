@@ -58,3 +58,24 @@ def usuario_actual(request):
         'email':    request.user.email,
         'rol':      'super_admin' if request.user.is_superuser else 'operador',
     })
+
+def identificacion(request):
+    return render(request, 'identificacion.html')
+
+def tramites(request):
+    return render(request, 'tramites.html')
+
+def tramite_detalle(request, slug):
+    return render(request, f'tramites/{slug}.html')
+
+def sedes(request):
+    return render(request, 'sedes.html')
+
+def nacimiento(request):
+    return render(request, 'nacimiento.html')
+
+def defuncion(request):
+    return render(request, 'defuncion.html')
+
+def matrimonio(request):
+    return render(request, 'matrimonio.html')
