@@ -55,15 +55,35 @@ body  {
 }
 
 /* ════════════════════ NAVBAR ════════════════════ */
-.navbar-rc {
-  background: #fff;
-  border-bottom: 3px solid var(--rc-red);
-  padding: 0 20px;
-  height: 64px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: var(--shadow-sm);
-  gap: 12px;
+.navbar-rc{
+    background:#fff;
+    border-bottom:3px solid var(--rc-red);
+    padding:0 20px;
+    height:96px; /* un poco más alta */
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+/* MENÚ HAMBURGUESA */
+
+.navbar-toggler-custom{
+  display:none;
+  background:none;
+  border:none;
+  font-size:34px;
+  color:var(--rc-red);
+  cursor:pointer;
+}
+
+.navbar-collapse-custom{
+    display:none;
+    width:100%;
+    flex-direction:column;
+    align-items:center;
+    gap:15px;
 }
 
 /* Logo RC izquierda (imagen) */
@@ -90,15 +110,17 @@ body  {
 .nav-links a.active { color: var(--rc-red); background: var(--rc-red-light); font-weight: 700; }
 
 /* Logo Ministerio derecha (imagen) */
-.logo-ministerio-link {
-  display: flex; align-items: center; flex-shrink: 0;
-  text-decoration: none; transition: opacity .2s;
+.logo-ministerio-link{
+    display:flex;
+    align-items:center;
+    margin-left:auto;
 }
-.logo-ministerio-link:hover { opacity: .8; }
-.logo-ministerio {
-  height: 40px;
-  max-width: 180px;
-  object-fit: contain; display: block;
+
+.logo-ministerio{
+    height:42px;
+    width:auto;
+    object-fit:contain;
+    display:block;
 }
 
 /* ════════════════════ CONTENIDO ════════════════════ */
@@ -351,20 +373,181 @@ footer a i { margin-right: 6px; }
 
 }
 
+.tramites-container{
+    max-width:900px;
+    margin:40px auto;
+    padding:30px;
+    border:2px solid #d9d9d9;
+    background:#f5f5f5;
+}
+
+.tramite-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    border:1px solid var(--rc-red);
+    background:white;
+
+    padding:15px 20px;
+    margin-bottom:15px;
+}
+
+.tramite-item i{
+    font-size:36px;
+    width:60px;
+    color:#222;
+}
+
+.tramite-item span{
+    flex:1;
+    font-size:24px;
+}
+
+.tramite-item .btn-rc{
+    min-width:140px;
+    text-align:center;
+}
 
 /* ════════════════════ RESPONSIVE ════════════════════ */
-@media (max-width: 767px) {
-  body { padding: 20px 0; }
-  .page-wrapper { border-radius: 0; }
-  .page-content { padding: 16px 16px 32px; }
-  .nav-links { display: none; }
-  .carousel-rc .carousel-item { padding: 20px 44px; min-height: 118px; }
-  .carousel-text h3 { font-size: 19px; }
-  .carousel-icon-circle { width: 62px; height: 62px; font-size: 28px; }
-  .logo-ministerio { max-width: 120px; height: 34px; }
-  footer { padding: 28px 16px 18px; }
+@media (max-width: 767px){
+
+  body{
+    padding:20px 0;
+  }
+
+  .page-wrapper{
+    border-radius:0;
+  }
+
+  .page-content{
+    padding:16px;
+  }
+
+  .navbar-rc{
+    height:auto;
+    min-height:64px;
+    flex-wrap:wrap;
+    padding:10px 15px;
+  }
+
+  .navbar-toggler-custom{
+    display:block;
+    margin-left:auto;
+  }
+
+  .navbar-collapse-custom{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:1;
+    height:100%;
 }
-@media (max-width: 480px) {
-  .navbar-rc { padding: 0 12px; }
-  .logo-ministerio { max-width: 90px; height: 28px; }
+
+  .navbar-collapse-custom.show{
+    display:flex;
+  }
+
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:30px;
+}
+  .nav-links a{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+  }
+
+  .logo-ministerio{
+    max-width:130px;
+    height:auto;
+  }
+
+  .carousel-rc .carousel-item{
+    padding:20px 44px;
+    min-height:118px;
+  }
+
+  .carousel-text h3{
+    font-size:19px;
+  }
+
+  .carousel-icon-circle{
+    width:62px;
+    height:62px;
+    font-size:28px;
+  }
+
+  footer{
+    padding:28px 16px 18px;
+  }
+}
+/* ESCRITORIO */
+@media (min-width: 768px){
+
+  .navbar-toggler-custom{
+    display:none;
+  }
+
+  .navbar-collapse-custom{
+    display:flex !important;
+    justify-content:space-between;
+    align-items:center;
+    width:100%;
+  }
+
+  .nav-links{
+    display:flex;
+    gap:2px;
+    align-items:center;
+    margin:auto;
+  }
+
+}
+@media (max-width: 768px){
+
+  .tramite-item{
+      flex-direction: column;
+      text-align: center;
+      gap: 15px;
+      padding: 20px;
+  }
+
+  .tramite-item i{
+      font-size: 42px;
+      width: auto;
+  }
+
+  .tramite-item span{
+      font-size: 18px;
+      flex: unset;
+  }
+
+  .tramite-item .btn-rc{
+      width: 100%;
+      max-width: 220px;
+      margin-top: 10px;
+  }
+
+}
+/* ════════════════════ TRAMITES AGRUPADOS ════════════════════ */
+.tramites-grupo-titulo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rc-dark);
+  border-left: 4px solid var(--rc-red);
+  padding-left: 10px;
+  margin: 28px 0 10px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+.tramites-grupo-titulo:first-of-type { margin-top: 0; }
+
+.tramite-item .tramite-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
 }

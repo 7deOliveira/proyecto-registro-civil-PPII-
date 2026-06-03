@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solicitar Turno DNI – Registro Civil</title>
+  <link rel="icon" type="image/png" href="img/1003424207-removebg-preview.png"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    /* ── Panel de turnos ── */
+    .turno-hero {
+      background: linear-gradient(135deg, var(--rc-red) 0%, var(--rc-red-dark) 100%);
+      color: #fff;
+      padding: 28px 28px 22px;
+      margin: -20px -28px 28px;
+    }
+    .turno-hero-icon {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,.18);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0;
+    }
+    .turno-hero h1 {
+      font-family: var(--font-display);
+      font-size: 1.7rem; font-weight: 800;
+      letter-spacing: .5px; margin: 0;
+    }
+    .turno-hero p { font-size: .88rem; opacity: .85; margin: 0; }
+
+    /* ── Paso indicador ── */
+    .paso-indicator {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 28px;
+    }
+    .paso-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #e0e0e0; color: #999;
+      font-weight: 700; font-size: .82rem;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      transition: all .3s;
+      flex-shrink: 0;
+    }
+    .paso-dot.activo  { background: var(--rc-red); color: #fff; }
+    .paso-dot.listo   { background: #1e7e34; color: #fff; }
+    .paso-line {
+      flex: 1; height: 3px; background: #e0e0e0;
+      transition: background .3s;
+    }
+    .paso-line.listo  { background: #1e7e34; }
+    .paso-label {
+      font-size: .7rem; color: var(--rc-muted);
+      text-align: center; margin-top: 4px;
+      font-family: var(--font-display); letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+    .paso-wrap { display: flex; flex-direction: column; align-items: center; }
+
+    /* ── Cards de paso ── */
+    .turno-step-card {
+      background: #fff;
+      border: 1px solid var(--rc-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .turno-step-card h2 {
+      font-family: var(--font-display);
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--rc-red);
+      border-left: 4px solid var(--rc-red);
+      padding-left: 10px;
+      margin-bottom: 18px;
+    }
+
+    /* ── Grilla de variantes DNI ── */
+    .variante-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 0;
+    }
+    .variante-card {
+      border: 2px solid var(--rc-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--trans);
+      background: #fff;
+    }
+    .variante-card:hover { border-color: var(--rc-red); background: #fff5f7; }
+    .variante-card.selected {
+      border-color: var(--rc-red);
+      background: var(--rc-red-light);
+    }
+    .variante-card i { font-size: 1.8rem; color: #444; display: block; margin-bottom: 6px; }
+    .variante-card.selected i { color: var(--rc-red); }
+    .variante-card span { font-size: .85rem; font-weight: 600; color: var(--rc-dark); }
+
+    /* ── Calendario ── */
+    .cal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .cal-mes-titulo {
+      font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px; color: var(--rc-dark);
+    }
+    .cal-nav-btn {
+      background: none; border: 1px solid var(--rc-border);
+      border-radius: var(--radius-sm); padding: 4px 10px;
+      cursor: pointer; color: var(--rc-dark); transition: var(--trans);
+    }
+    .cal-nav-btn:hover { background: var(--rc-red-light); border-color: var(--rc-red); color: var(--rc-red); }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .cal-dia-nombre {
+      text-align: center; font-size: .72rem; font-weight: 700;
+      color: var(--rc-muted); padding: 4px 0;
+      font-family: var(--font-display); letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .cal-dia {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm);
+      font-size: .85rem; cursor: pointer;
+      border: 1px solid transparent;
+      transition: var(--trans); font-weight: 500;
+    }
+    .cal-dia.vacio { cursor: default; }
+    .cal-dia.no-habil {
+      color: #ccc; cursor: not-allowed; background: #fafafa;
+    }
+    .cal-dia.pasado {
+      color: #ccc; cursor: not-allowed; background: #fafafa;
+    }
+    .cal-dia.feriado {
+      color: #ccc; cursor: not-allowed;
+      background: repeating-linear-gradient(45deg,#f9f9f9,#f9f9f9 3px,#f0f0f0 3px,#f0f0f0 6px);
+    }
+    .cal-dia.disponible {
+      background: #e8f5e9; color: #1b5e20; border-color: #a5d6a7;
+    }
+    .cal-dia.disponible:hover { background: #c8e6c9; border-color: #66bb6a; }
+    .cal-dia.lleno { background: #ffebee; color: #b71c1c; cursor: not-allowed; border-color: #ef9a9a; }
+    .cal-dia.seleccionado {
+      background: var(--rc-red) !important; color: #fff !important;
+      border-color: var(--rc-red-dark) !important; font-weight: 700;
+    }
+    .cal-dia.hoy { border: 2px solid var(--rc-red); }
+    .cal-leyenda {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      margin-top: 14px; font-size: .75rem; color: var(--rc-muted);
+    }
+    .cal-leyenda-item { display: flex; align-items: center; gap: 5px; }
+    .cal-leyenda-dot {
+      width: 12px; height: 12px; border-radius: 3px;
+    }
+
+    /* ── Grilla de horarios ── */
+    .horarios-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 8px;
+    }
+    .horario-btn {
+      border: 2px solid var(--rc-border);
+      border-radius: var(--radius-sm);
+      padding: 8px 6px; text-align: center;
+      cursor: pointer; background: #fff;
+      font-size: .82rem; font-weight: 600;
+      color: var(--rc-dark); transition: var(--trans);
+    }
+    .horario-btn .disponibles {
+      font-size: .65rem; font-weight: 400;
+      color: #1b5e20; display: block; margin-top: 2px;
+    }
+    .horario-btn.libre { background: #e8f5e9; border-color: #a5d6a7; color: #1b5e20; }
+    .horario-btn.libre:hover { background: #c8e6c9; border-color: #66bb6a; }
+    .horario-btn.lleno { background: #ffebee; border-color: #ef9a9a; color: #b71c1c; cursor: not-allowed; }
+    .horario-btn.lleno .disponibles { color: #b71c1c; }
+    .horario-btn.selected { background: var(--rc-red); border-color: var(--rc-red-dark); color: #fff; }
+    .horario-btn.selected .disponibles { color: rgba(255,255,255,.8); }
+
+    /* ── Formulario de datos ── */
+    .form-label-rc {
+      font-size: .85rem; font-weight: 600;
+      color: var(--rc-dark); margin-bottom: 4px;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--rc-red);
+      box-shadow: 0 0 0 3px rgba(200,16,46,.12);
+    }
+
+    /* ── Confirmación ── */
+    .confirmacion-box {
+      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+      border: 2px solid #4caf50;
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .confirmacion-icon {
+      width: 72px; height: 72px;
+      background: #4caf50; color: #fff;
+      border-radius: 50%; font-size: 2.2rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .confirmacion-box h2 {
+      font-family: var(--font-display); font-size: 1.5rem;
+      font-weight: 800; color: #1b5e20; margin-bottom: 12px;
+    }
+    .confirmacion-detalle {
+      background: #fff; border-radius: var(--radius-md);
+      padding: 18px; margin: 18px 0;
+      text-align: left; font-size: .9rem;
+    }
+    .confirmacion-detalle .det-row {
+      display: flex; justify-content: space-between;
+      border-bottom: 1px solid #f0f0f0; padding: 7px 0;
+    }
+    .confirmacion-detalle .det-row:last-child { border-bottom: none; }
+    .confirmacion-detalle .det-label { color: var(--rc-muted); font-size: .82rem; }
+    .confirmacion-detalle .det-val { font-weight: 600; color: var(--rc-dark); }
+    .confirmacion-alerta {
+      background: #fff8e1; border: 1px solid #ffe082;
+      border-radius: var(--radius-sm); padding: 12px 16px;
+      font-size: .84rem; color: #6d4c00;
+      margin-top: 16px; text-align: left;
+    }
+
+    /* ── Botones navegación ── */
+    .turno-nav {
+      display: flex; justify-content: space-between;
+      margin-top: 22px; gap: 10px;
+    }
+    .btn-rc-outline {
+      background: #fff; color: var(--rc-red);
+      border: 2px solid var(--rc-red);
+      border-radius: var(--radius-sm);
+      padding: 9px 20px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; font-family: var(--font-body);
+      transition: var(--trans); text-decoration: none;
+    }
+    .btn-rc-outline:hover { background: var(--rc-red-light); }
+
+    /* ── Info lateral ── */
+    .turno-info-box {
+      background: var(--rc-surface);
+      border: 1px solid var(--rc-border);
+      border-radius: var(--radius-md);
+      padding: 18px; margin-bottom: 16px;
+      font-size: .85rem;
+    }
+    .turno-info-box h6 {
+      font-family: var(--font-display); font-size: .88rem;
+      font-weight: 700; color: var(--rc-red);
+      text-transform: uppercase; letter-spacing: .5px;
+      margin-bottom: 10px;
+    }
+    .turno-info-box ul { padding-left: 16px; margin: 0; color: var(--rc-muted); }
+    .turno-info-box li { margin-bottom: 5px; }
+    .turno-info-box .info-badge {
+      display: inline-block; background: var(--rc-red-light);
+      color: var(--rc-red); font-weight: 700; font-size: .8rem;
+      padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+    }
+
+    /* ── Número de turno ── */
+    .num-turno {
+      font-family: var(--font-display); font-size: 2.5rem; font-weight: 800;
+      color: var(--rc-red); letter-spacing: 2px;
+    }
+
+    @media (max-width: 575px) {
+      .turno-hero { margin: -16px -16px 20px; padding: 20px 16px; }
+      .variante-grid { grid-template-columns: repeat(2, 1fr); }
+      .horarios-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- NAVBAR -->
+  <header class="navbar-rc">
+    <a href="index.html" class="logo-rc-link">
+      <img src="img/1003424207-removebg-preview.png" alt="Registro Civil" class="logo-rc-img">
+    </a>
+    <button class="navbar-toggler-custom" type="button">
+      <i class="bi bi-list"></i>
+    </button>
+    <div class="collapse navbar-collapse-custom" id="menuRC">
+      <nav class="nav-links">
+        <a href="index.html">Inicio</a>
+        <a href="tramites.html">Trámites</a>
+        <a href="sedes.html">Sedes</a>
+      </nav>
+      <a href="https://www.justiciasde.gob.ar" target="_blank" rel="noopener" class="logo-ministerio-link">
+        <img src="img/logo.png" alt="Ministerio de Justicia" class="logo-ministerio">
+      </a>
+    </div>
+  </header>
+
+  <main class="page-content">
+
+    <!-- HERO -->
+    <div class="turno-hero">
+      <div class="d-flex align-items-center gap-3">
+        <div class="turno-hero-icon"><i class="bi bi-calendar-check-fill"></i></div>
+        <div>
+          <h1>Solicitar Turno – DNI</h1>
+          <p>Atención presencial · Sin necesidad de cuenta · Trámites de DNI</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- COLUMNA PRINCIPAL -->
+      <div class="col-lg-8">
+
+        <!-- Indicador de pasos -->
+        <div class="paso-indicator mb-4" id="pasoIndicator">
+          <div class="paso-wrap">
+            <div class="paso-dot activo" id="dot1">1</div>
+            <div class="paso-label">Trámite</div>
+          </div>
+          <div class="paso-line" id="line1"></div>
+          <div class="paso-wrap">
+            <div class="paso-dot" id="dot2">2</div>
+            <div class="paso-label">Fecha</div>
+          </div>
+          <div class="paso-line" id="line2"></div>
+          <div class="paso-wrap">
+            <div class="paso-dot" id="dot3">3</div>
+            <div class="paso-label">Horario</div>
+          </div>
+          <div class="paso-line" id="line3"></div>
+          <div class="paso-wrap">
+            <div class="paso-dot" id="dot4">4</div>
+            <div class="paso-label">Datos</div>
+          </div>
+          <div class="paso-line" id="line4"></div>
+          <div class="paso-wrap">
+            <div class="paso-dot" id="dot5">✓</div>
+            <div class="paso-label">Listo</div>
+          </div>
+        </div>
+
+        <!-- ═══ PASO 1: Tipo de trámite ═══ -->
+        <div id="paso1" class="turno-step-card">
+          <h2><i class="bi bi-credit-card-2-front me-2"></i>Paso 1 — Seleccioná el trámite</h2>
+          <div class="variante-grid">
+            <div class="variante-card" data-tramite="DNI – 1er Ejemplar">
+              <i class="bi bi-person-plus"></i>
+              <span>1er Ejemplar</span>
+            </div>
+            <div class="variante-card" data-tramite="DNI – Renovación">
+              <i class="bi bi-arrow-repeat"></i>
+              <span>Renovación</span>
+            </div>
+            <div class="variante-card" data-tramite="DNI – Cambio de Domicilio">
+              <i class="bi bi-house-fill"></i>
+              <span>Cambio de Domicilio</span>
+            </div>
+            <div class="variante-card" data-tramite="DNI – Actualización de Datos">
+              <i class="bi bi-pencil-square"></i>
+              <span>Actualización de Datos</span>
+            </div>
+            <div class="variante-card" data-tramite="DNI – Duplicado / Extravío">
+              <i class="bi bi-clipboard2-x"></i>
+              <span>Duplicado / Extravío</span>
+            </div>
+            <div class="variante-card" data-tramite="DNI – Corrección de Datos">
+              <i class="bi bi-tools"></i>
+              <span>Corrección de Datos</span>
+            </div>
+          </div>
+          <div class="turno-nav">
+            <span></span>
+            <button class="btn-rc" id="btn1Siguiente" disabled onclick="irPaso(2)">
+              Siguiente <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ PASO 2: Fecha ═══ -->
+        <div id="paso2" class="turno-step-card d-none">
+          <h2><i class="bi bi-calendar3 me-2"></i>Paso 2 — Elegí la fecha</h2>
+
+          <div class="cal-header">
+            <button class="cal-nav-btn" id="btnMesAnterior"><i class="bi bi-chevron-left"></i></button>
+            <span class="cal-mes-titulo" id="calMesTitulo"></span>
+            <button class="cal-nav-btn" id="btnMesSiguiente"><i class="bi bi-chevron-right"></i></button>
+          </div>
+
+          <div class="cal-grid" id="calGrid"></div>
+
+          <div class="cal-leyenda">
+            <div class="cal-leyenda-item">
+              <div class="cal-leyenda-dot" style="background:#e8f5e9;border:1px solid #a5d6a7"></div>
+              Disponible
+            </div>
+            <div class="cal-leyenda-item">
+              <div class="cal-leyenda-dot" style="background:#ffebee;border:1px solid #ef9a9a"></div>
+              Sin turnos
+            </div>
+            <div class="cal-leyenda-item">
+              <div class="cal-leyenda-dot" style="background:#fafafa;border:1px solid #ddd"></div>
+              No hábil / feriado
+            </div>
+            <div class="cal-leyenda-item">
+              <div class="cal-leyenda-dot" style="background:var(--rc-red)"></div>
+              Seleccionado
+            </div>
+          </div>
+
+          <div class="turno-nav">
+            <button class="btn-rc-outline" onclick="irPaso(1)">
+              <i class="bi bi-arrow-left me-1"></i> Anterior
+            </button>
+            <button class="btn-rc" id="btn2Siguiente" disabled onclick="irPaso(3)">
+              Siguiente <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ PASO 3: Horario ═══ -->
+        <div id="paso3" class="turno-step-card d-none">
+          <h2><i class="bi bi-clock me-2"></i>Paso 3 — Elegí el horario</h2>
+          <p class="text-muted small mb-3">Turnos de 15 minutos · 2 ventanillas disponibles para DNI</p>
+          <div class="horarios-grid" id="horariosGrid"></div>
+          <div class="turno-nav">
+            <button class="btn-rc-outline" onclick="irPaso(2)">
+              <i class="bi bi-arrow-left me-1"></i> Anterior
+            </button>
+            <button class="btn-rc" id="btn3Siguiente" disabled onclick="irPaso(4)">
+              Siguiente <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ PASO 4: Datos personales ═══ -->
+        <div id="paso4" class="turno-step-card d-none">
+          <h2><i class="bi bi-person-lines-fill me-2"></i>Paso 4 — Tus datos</h2>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label-rc">Nombre <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="inpNombre" placeholder="Ej: Ana" maxlength="50">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label-rc">Apellido <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="inpApellido" placeholder="Ej: García" maxlength="50">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label-rc">DNI <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="inpDni" placeholder="Ej: 38123456" maxlength="8" inputmode="numeric">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label-rc">Teléfono de contacto <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" id="inpTelefono" placeholder="Ej: 385 4123456" maxlength="20">
+            </div>
+            <div class="col-12">
+              <label class="form-label-rc">Correo electrónico <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="inpEmail" placeholder="Ej: nombre@mail.com">
+              <div class="form-text"><i class="bi bi-info-circle me-1"></i>A este correo recibirás confirmación y, en caso de cancelación, aviso del Registro Civil.</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label-rc">Observaciones <span class="text-muted fw-normal">(opcional)</span></label>
+              <textarea class="form-control" id="inpObservaciones" rows="2" placeholder="Ej: Concurro con menor de edad" maxlength="200"></textarea>
+            </div>
+          </div>
+
+          <p class="text-danger small mt-2 d-none" id="errorDatos"><i class="bi bi-exclamation-circle me-1"></i>Completá todos los campos obligatorios.</p>
+          <p class="text-danger small mt-1 d-none" id="errorDni"><i class="bi bi-exclamation-circle me-1"></i>El DNI debe tener entre 7 y 8 dígitos.</p>
+          <p class="text-danger small mt-1 d-none" id="errorEmail"><i class="bi bi-exclamation-circle me-1"></i>Ingresá un correo electrónico válido.</p>
+
+          <div class="turno-nav">
+            <button class="btn-rc-outline" onclick="irPaso(3)">
+              <i class="bi bi-arrow-left me-1"></i> Anterior
+            </button>
+            <button class="btn-rc" onclick="confirmarTurno()">
+              <i class="bi bi-check2-circle me-1"></i> Confirmar turno
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ PASO 5: Confirmación ═══ -->
+        <div id="paso5" class="turno-step-card d-none">
+          <div class="confirmacion-box">
+            <div class="confirmacion-icon"><i class="bi bi-check-lg"></i></div>
+            <h2>¡Turno confirmado!</h2>
+            <p class="text-muted">Tu solicitud fue registrada exitosamente.</p>
+
+            <div class="text-center my-2">
+              <div class="text-muted small mb-1">Número de turno</div>
+              <div class="num-turno" id="numTurnoDisplay"></div>
+            </div>
+
+            <div class="confirmacion-detalle">
+              <div class="det-row">
+                <span class="det-label">Trámite</span>
+                <span class="det-val" id="confTramite"></span>
+              </div>
+              <div class="det-row">
+                <span class="det-label">Fecha</span>
+                <span class="det-val" id="confFecha"></span>
+              </div>
+              <div class="det-row">
+                <span class="det-label">Horario</span>
+                <span class="det-val" id="confHorario"></span>
+              </div>
+              <div class="det-row">
+                <span class="det-label">Nombre</span>
+                <span class="det-val" id="confNombre"></span>
+              </div>
+              <div class="det-row">
+                <span class="det-label">DNI</span>
+                <span class="det-val" id="confDni"></span>
+              </div>
+              <div class="det-row">
+                <span class="det-label">Correo</span>
+                <span class="det-val" id="confEmail"></span>
+              </div>
+            </div>
+
+            <div class="confirmacion-alerta">
+              <i class="bi bi-envelope-fill me-2" style="color:#f59e0b"></i>
+              <strong>Quedate atento a tu correo electrónico.</strong><br>
+              En caso de cancelación del turno, el Registro Civil te informará a la dirección de email proporcionada. Te recomendamos guardar este número de turno.
+            </div>
+
+            <div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
+              <button class="btn-rc" onclick="imprimirTurno()">
+                <i class="bi bi-printer me-1"></i> Imprimir comprobante
+              </button>
+              <a href="index.html" class="btn-rc-outline">
+                <i class="bi bi-house me-1"></i> Ir al inicio
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-lg-8 -->
+
+      <!-- COLUMNA LATERAL -->
+      <div class="col-lg-4">
+
+        <div class="turno-info-box">
+          <h6><i class="bi bi-clock me-1"></i>Horarios de atención</h6>
+          <ul>
+            <li>Lunes a Viernes</li>
+            <li>08:00 hs a 12:00 hs</li>
+            <li>Días hábiles únicamente</li>
+          </ul>
+        </div>
+
+        <div class="turno-info-box">
+          <h6><i class="bi bi-info-circle me-1"></i>Capacidad diaria</h6>
+          <span class="info-badge">20 turnos por día</span>
+          <ul>
+            <li>2 ventanillas para DNI</li>
+            <li>Máximo 2 personas por horario</li>
+            <li>Turnos cada 15 minutos</li>
+          </ul>
+        </div>
+
+        <div class="turno-info-box">
+          <h6><i class="bi bi-card-checklist me-1"></i>Documentación</h6>
+          <ul>
+            <li>DNI anterior (si posee)</li>
+            <li>Partida de nacimiento</li>
+            <li>Comprobante de domicilio</li>
+          </ul>
+          <a href="identificacion.html" class="btn-rc-outline mt-2 d-inline-block" style="font-size:.8rem;padding:5px 12px;">
+            Ver requisitos completos <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+
+        <!-- Resumen selección -->
+        <div class="turno-info-box" id="resumenSeleccion" style="display:none!important">
+          <h6><i class="bi bi-clipboard-check me-1"></i>Tu selección</h6>
+          <div style="font-size:.85rem;color:var(--rc-dark);">
+            <div id="resumenTramite" class="mb-1"></div>
+            <div id="resumenFecha" class="mb-1"></div>
+            <div id="resumenHorario"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <hr class="footer-divider"/>
+    <p class="footer-bottom">© 2026 Registro Civil – Instituto Tecnológico de Santiago del Estero. Todos los derechos reservados.</p>
+  </footer>
+
+</div><!-- /page-wrapper -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ════════════════════════════════════════════════
+//  CONFIGURACIÓN
+// ════════════════════════════════════════════════
+const MAX_TURNOS_DIA    = 20;   // máximo por día
+const MAX_POR_HORARIO   = 2;    // máximo por franja
+const MINUTOS_SLOT      = 15;
+const HORA_INICIO       = 8;    // 08:00
+const HORA_FIN          = 12;   // hasta 12:00 (sin incluir)
+
+// Feriados nacionales fijos Argentina (MM-DD) + provinciales si aplica
+const FERIADOS = [
+  "01-01","03-03","03-04","04-02","05-01","05-25",
+  "06-20","07-09","08-17","10-12","11-20","12-08","12-25"
+];
+
+// ════════════════════════════════════════════════
+//  ESTADO
+// ════════════════════════════════════════════════
+let pasoActual   = 1;
+let tramiteSelec = "";
+let fechaSelec   = null;   // objeto Date
+let horarioSelec = "";
+let calAnio      = 0;
+let calMes       = 0;
+
+// ════════════════════════════════════════════════
+//  STORAGE (clave localStorage)
+// ════════════════════════════════════════════════
+// Misma clave que usa admin.js → los turnos aparecen directamente en el panel
+const STORAGE_KEY = "rc_turnos";
+
+function getTurnos() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+}
+function saveTurno(t) {
+  const arr = getTurnos();
+  arr.push(t);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+// ════════════════════════════════════════════════
+//  UTILIDADES DE FECHA
+// ════════════════════════════════════════════════
+function pad2(n) { return String(n).padStart(2,"0"); }
+
+function fechaStr(d) {
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+
+function esFeriado(d) {
+  const key = `${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  return FERIADOS.includes(key);
+}
+
+function esHabil(d) {
+  const dow = d.getDay(); // 0=dom,6=sab
+  if (dow === 0 || dow === 6) return false;
+  if (esFeriado(d)) return false;
+  // solo desde 2026
+  if (d.getFullYear() < 2026) return false;
+  return true;
+}
+
+function formatFechaLarga(d) {
+  const meses = ["enero","febrero","marzo","abril","mayo","junio",
+                 "julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const dias  = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  return `${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+}
+
+// ════════════════════════════════════════════════
+//  GENERACIÓN DE SLOTS HORARIOS
+// ════════════════════════════════════════════════
+function generarSlots() {
+  const slots = [];
+  let h = HORA_INICIO, m = 0;
+  while (h < HORA_FIN) {
+    slots.push(`${pad2(h)}:${pad2(m)}`);
+    m += MINUTOS_SLOT;
+    if (m >= 60) { m -= 60; h++; }
+  }
+  return slots; // ["08:00","08:15",..."11:45"]
+}
+
+const SLOTS = generarSlots(); // 16 slots → 32 plazas máx (2 cada una)
+
+// ════════════════════════════════════════════════
+//  CONTEO DE TURNOS EN STORAGE
+// ════════════════════════════════════════════════
+function contarTurnosDia(fechaS) {
+  return getTurnos().filter(t => t.fecha === fechaS).length;
+}
+
+function contarTurnosHorario(fechaS, horario) {
+  return getTurnos().filter(t => t.fecha === fechaS && t.hora === horario).length;
+}
+
+// ════════════════════════════════════════════════
+//  NAVEGACIÓN DE PASOS
+// ════════════════════════════════════════════════
+function irPaso(n) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`paso${i}`).classList.toggle("d-none", i !== n);
+  }
+  pasoActual = n;
+  actualizarIndicador();
+  if (n === 2) renderCalendario();
+  if (n === 3) renderHorarios();
+  actualizarResumen();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function actualizarIndicador() {
+  for (let i = 1; i <= 5; i++) {
+    const dot  = document.getElementById(`dot${i}`);
+    const line = document.getElementById(`line${i}`);
+    dot.classList.remove("activo","listo");
+    if (i < pasoActual)       { dot.classList.add("listo"); dot.innerHTML = "✓"; }
+    else if (i === pasoActual){ dot.classList.add("activo"); if(i<=4) dot.innerHTML = i; }
+    else { dot.innerHTML = i === 5 ? "✓" : i; }
+    if (line) line.classList.toggle("listo", i < pasoActual);
+  }
+}
+
+// ════════════════════════════════════════════════
+//  PASO 1 – VARIANTES DNI
+// ════════════════════════════════════════════════
+document.querySelectorAll(".variante-card").forEach(card => {
+  card.addEventListener("click", () => {
+    document.querySelectorAll(".variante-card").forEach(c => c.classList.remove("selected"));
+    card.classList.add("selected");
+    tramiteSelec = card.dataset.tramite;
+    document.getElementById("btn1Siguiente").disabled = false;
+  });
+});
+
+// ════════════════════════════════════════════════
+//  PASO 2 – CALENDARIO
+// ════════════════════════════════════════════════
+function initCalendario() {
+  const hoy = new Date();
+  calAnio = hoy.getFullYear();
+  calMes  = hoy.getMonth();
+  // asegurarse que empezamos en 2026
+  if (calAnio < 2026) { calAnio = 2026; calMes = 0; }
+}
+initCalendario();
+
+document.getElementById("btnMesAnterior").addEventListener("click", () => {
+  calMes--;
+  if (calMes < 0) { calMes = 11; calAnio--; }
+  renderCalendario();
+});
+document.getElementById("btnMesSiguiente").addEventListener("click", () => {
+  calMes++;
+  if (calMes > 11) { calMes = 0; calAnio++; }
+  renderCalendario();
+});
+
+function renderCalendario() {
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  document.getElementById("calMesTitulo").textContent = `${meses[calMes]} ${calAnio}`;
+
+  const grid = document.getElementById("calGrid");
+  grid.innerHTML = "";
+
+  // Encabezado días
+  ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].forEach(d => {
+    const el = document.createElement("div");
+    el.className = "cal-dia-nombre"; el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const primerDia = new Date(calAnio, calMes, 1);
+  // lunes=0
+  let offset = primerDia.getDay() - 1;
+  if (offset < 0) offset = 6;
+
+  for (let i = 0; i < offset; i++) {
+    const v = document.createElement("div"); v.className = "cal-dia vacio";
+    grid.appendChild(v);
+  }
+
+  const totalDias = new Date(calAnio, calMes+1, 0).getDate();
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+  for (let d = 1; d <= totalDias; d++) {
+    const fecha = new Date(calAnio, calMes, d);
+    const el    = document.createElement("div");
+    el.className = "cal-dia";
+    el.textContent = d;
+
+    const fechaS = fechaStr(fecha);
+
+    if (!esHabil(fecha)) {
+      el.classList.add(fecha.getDay()===0||fecha.getDay()===6 ? "no-habil" : "feriado");
+    } else if (fecha < hoy) {
+      el.classList.add("pasado");
+    } else {
+      const count = contarTurnosDia(fechaS);
+      if (count >= MAX_TURNOS_DIA) {
+        el.classList.add("lleno");
+        el.title = "Sin turnos disponibles";
+      } else {
+        el.classList.add("disponible");
+        el.title = `${MAX_TURNOS_DIA - count} turnos disponibles`;
+        el.addEventListener("click", () => seleccionarFecha(fecha, el));
+      }
+    }
+
+    // Hoy
+    if (fechaStr(fecha) === fechaStr(hoy)) el.classList.add("hoy");
+    // ya seleccionado
+    if (fechaSelec && fechaStr(fecha) === fechaStr(fechaSelec))
+      el.classList.add("seleccionado");
+
+    grid.appendChild(el);
+  }
+}
+
+function seleccionarFecha(fecha, el) {
+  document.querySelectorAll(".cal-dia.seleccionado").forEach(e => e.classList.remove("seleccionado"));
+  el.classList.add("seleccionado");
+  fechaSelec = fecha;
+  document.getElementById("btn2Siguiente").disabled = false;
+}
+
+// ════════════════════════════════════════════════
+//  PASO 3 – HORARIOS
+// ════════════════════════════════════════════════
+function renderHorarios() {
+  const grid   = document.getElementById("horariosGrid");
+  const fechaS = fechaStr(fechaSelec);
+  grid.innerHTML = "";
+
+  SLOTS.forEach(slot => {
+    const usados = contarTurnosHorario(fechaS, slot);
+    const libres = MAX_POR_HORARIO - usados;
+
+    const btn = document.createElement("div");
+    btn.className = "horario-btn";
+    btn.innerHTML = `<span>${slot} hs</span>
+      <span class="disponibles">${libres > 0 ? libres === 2 ? "2 lugares" : "1 lugar" : "Sin lugar"}</span>`;
+
+    if (libres <= 0) {
+      btn.classList.add("lleno");
+    } else {
+      btn.classList.add("libre");
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".horario-btn.selected").forEach(b => {
+          b.classList.remove("selected");
+          b.classList.add("libre");
+        });
+        btn.classList.remove("libre");
+        btn.classList.add("selected");
+        horarioSelec = slot;
+        document.getElementById("btn3Siguiente").disabled = false;
+      });
+    }
+
+    if (horarioSelec === slot && libres > 0) {
+      btn.classList.remove("libre");
+      btn.classList.add("selected");
+    }
+
+    grid.appendChild(btn);
+  });
+}
+
+// ════════════════════════════════════════════════
+//  PASO 4 – CONFIRMAR
+// ════════════════════════════════════════════════
+function confirmarTurno() {
+  // Ocultar errores
+  ["errorDatos","errorDni","errorEmail"].forEach(id =>
+    document.getElementById(id).classList.add("d-none"));
+
+  const nombre = document.getElementById("inpNombre").value.trim();
+  const apellido = document.getElementById("inpApellido").value.trim();
+  const dni    = document.getElementById("inpDni").value.trim();
+  const tel    = document.getElementById("inpTelefono").value.trim();
+  const email  = document.getElementById("inpEmail").value.trim();
+  const obs    = document.getElementById("inpObservaciones").value.trim();
+
+  let ok = true;
+
+  if (!nombre || !apellido || !dni || !tel || !email) {
+    document.getElementById("errorDatos").classList.remove("d-none");
+    ok = false;
+  }
+  if (dni && (!/^\d{7,8}$/.test(dni))) {
+    document.getElementById("errorDni").classList.remove("d-none");
+    ok = false;
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById("errorEmail").classList.remove("d-none");
+    ok = false;
+  }
+  if (!ok) return;
+
+  // Verificar nuevamente disponibilidad (podría haber cambiado)
+  const fechaS = fechaStr(fechaSelec);
+  if (contarTurnosDia(fechaS) >= MAX_TURNOS_DIA) {
+    alert("Lo sentimos, ya no hay turnos disponibles para esa fecha. Por favor elegí otro día.");
+    irPaso(2); return;
+  }
+  if (contarTurnosHorario(fechaS, horarioSelec) >= MAX_POR_HORARIO) {
+    alert("Lo sentimos, ese horario ya no está disponible. Por favor elegí otro horario.");
+    irPaso(3); return;
+  }
+
+  // Número de turno y ID numérico compatibles con admin.js
+  const todos    = getTurnos();
+  const nextId   = todos.length > 0 ? Math.max(...todos.map(t => Number(t.id) || 0)) + 1 : 1;
+  const numTurno = `RC-DNI-${calAnio}-${String(nextId).padStart(4,"0")}`;
+
+  // Esquema idéntico al que usa admin.js: {id, numero, fecha, hora, nombre, dni, mail, tramite, estado}
+  // Campos extra para visualización en admin
+  const turno = {
+    id:           nextId,
+    numero:       numTurno,
+    fecha:        fechaS,
+    hora:         horarioSelec,
+    nombre:       `${nombre} ${apellido}`,
+    dni:          dni,
+    mail:         email,
+    tramite:      tramiteSelec,
+    estado:       "Pendiente",
+    // Campos adicionales del ciudadano
+    telefono:     tel,
+    observaciones: obs,
+    origen:       "ciudadano",
+    creado:       new Date().toISOString()
+  };
+
+  saveTurno(turno);
+
+  // Mostrar confirmación
+  document.getElementById("numTurnoDisplay").textContent = numTurno;
+  document.getElementById("confTramite").textContent  = tramiteSelec;
+  document.getElementById("confFecha").textContent    = formatFechaLarga(fechaSelec);
+  document.getElementById("confHorario").textContent  = `${horarioSelec} hs`;
+  document.getElementById("confNombre").textContent   = `${nombre} ${apellido}`;
+  document.getElementById("confDni").textContent      = dni;
+  document.getElementById("confEmail").textContent    = email;
+
+  irPaso(5);
+}
+
+// ════════════════════════════════════════════════
+//  RESUMEN LATERAL
+// ════════════════════════════════════════════════
+function actualizarResumen() {
+  const box = document.getElementById("resumenSeleccion");
+  if (!tramiteSelec) { box.style.setProperty("display","none","important"); return; }
+  box.style.removeProperty("display");
+  document.getElementById("resumenTramite").innerHTML =
+    `<strong><i class='bi bi-credit-card-2-front me-1'></i></strong> ${tramiteSelec}`;
+  document.getElementById("resumenFecha").innerHTML =
+    fechaSelec
+      ? `<strong><i class='bi bi-calendar3 me-1'></i></strong> ${formatFechaLarga(fechaSelec)}`
+      : "";
+  document.getElementById("resumenHorario").innerHTML =
+    horarioSelec
+      ? `<strong><i class='bi bi-clock me-1'></i></strong> ${horarioSelec} hs`
+      : "";
+}
+
+// ════════════════════════════════════════════════
+//  IMPRIMIR
+// ════════════════════════════════════════════════
+function imprimirTurno() { window.print(); }
+
+// ════════════════════════════════════════════════
+//  NAVBAR HAMBURGESA
+// ════════════════════════════════════════════════
+document.addEventListener("DOMContentLoaded", function(){
+  const btn  = document.querySelector(".navbar-toggler-custom");
+  const menu = document.querySelector("#menuRC");
+  if(btn && menu) btn.addEventListener("click", ()=> menu.classList.toggle("show"));
+});
+</script>
+</body>
+</html>

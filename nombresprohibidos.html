@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nombre de las Personas – Registro Civil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/tramites.css"/>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-rc-red">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+        <img src="img/logo.png" alt="Logo" height="40" onerror="this.style.display='none'">
+        <span class="fw-bold" style="font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;letter-spacing:.5px;">REGISTRO CIVIL</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav ms-auto gap-1">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link active" href="tramites.html">Trámites</a></li>
+          <li class="nav-item"><a class="nav-link" href="turnos.html">Turnos</a></li>
+          <li class="nav-item"><a class="nav-link" href="noticias.html">Noticias</a></li>
+          <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="bg-light border-bottom py-2">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="index.html" class="text-rc-red text-decoration-none">Inicio</a></li>
+          <li class="breadcrumb-item"><a href="tramites.html" class="text-rc-red text-decoration-none">Trámites</a></li>
+          <li class="breadcrumb-item"><a href="nacimiento.html" class="text-rc-red text-decoration-none">Nacimiento</a></li>
+          <li class="breadcrumb-item active">Nombre de las Personas</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="tramite-hero">
+    <div class="container">
+      <div class="d-flex align-items-center gap-3">
+        <div class="tramite-hero-icon">
+          <i class="bi bi-alphabet"></i>
+        </div>
+        <div>
+          <p class="tramite-hero-cat mb-0">Nacimiento</p>
+          <h1 class="tramite-hero-title mb-0">Nombre de las Personas</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Índice rápido -->
+  <div class="bg-light border-bottom py-3">
+    <div class="container">
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="text-muted small fw-semibold me-2">En esta página:</span>
+        <a href="#prenombre" class="btn btn-outline-secondary btn-sm">Prenombre o nombre de pila</a>
+        <a href="#inscripcion" class="btn btn-outline-secondary btn-sm">Inscripción en el Registro</a>
+        <a href="#apellido-hijos" class="btn btn-outline-secondary btn-sm">Apellido de los hijos</a>
+        <a href="#apellido-casados" class="btn btn-outline-secondary btn-sm">Apellido de personas casadas</a>
+        <a href="#cambio" class="btn btn-outline-secondary btn-sm">Cambio de nombre</a>
+        <a href="#proteccion" class="btn btn-outline-secondary btn-sm">Protección del nombre</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-5">
+    <div class="row g-4">
+
+      <div class="col-lg-8">
+
+        <!-- Intro -->
+        <div class="tramite-card mb-4">
+          <p class="tramite-intro">
+            La ley establece con qué nombres se puede inscribir a una persona en el Registro.
+          </p>
+          <div class="row g-3 mt-1">
+            <div class="col-sm-6">
+              <div class="nombre-regla nombre-regla--no">
+                <i class="bi bi-x-circle-fill me-2"></i>
+                <strong>No están permitidos</strong>
+                <ul class="mb-0 mt-2 small">
+                  <li>Nombres extravagantes</li>
+                  <li>Apellidos como nombre</li>
+                  <li>Más de 3 nombres</li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="nombre-regla nombre-regla--si">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Sí están permitidos</strong>
+                <ul class="mb-0 mt-2 small">
+                  <li>Nombres aborígenes</li>
+                  <li>Derivados de voces aborígenes autóctonas</li>
+                  <li>Nombres latinoamericanos</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <p class="small text-muted mt-3 mb-0">
+            <i class="bi bi-book me-1"></i>Marco normativo: <strong>Código Civil y Comercial – Familia y vivienda</strong>
+          </p>
+        </div>
+
+        <!-- Prenombre -->
+        <div id="prenombre" class="tramite-card mb-4">
+          <h2 class="tramite-section-title"><i class="bi bi-person-badge me-2"></i>Prenombre o nombre de pila</h2>
+          <div class="tramite-faq">
+            <div class="faq-item">
+              <div class="faq-pregunta">¿A qué se llama prenombre o nombre de pila?</div>
+              <div class="faq-respuesta">Es el que te diferencia dentro de tu propia familia, por ejemplo Juan o Elena. Legalmente se adquiere a partir de que te inscriben con ese nombre en el Registro Civil.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inscripción -->
+        <div id="inscripcion" class="tramite-card mb-4">
+          <h2 class="tramite-section-title"><i class="bi bi-journal-check me-2"></i>Inscripción en el Registro</h2>
+          <div class="tramite-faq">
+            <div class="faq-item">
+              <div class="faq-pregunta">¿Hay prenombres que no pueden inscribirse en el Registro Civil?</div>
+              <div class="faq-respuesta">
+                Sí. No se pueden inscribir:
+                <ul class="mt-2 mb-0">
+                  <li>Más de tres prenombres.</li>
+                  <li>Apellidos como prenombres.</li>
+                  <li>Primeros prenombres idénticos a los de hermanos vivos.</li>
+                  <li>Los que sean extravagantes.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-pregunta">¿Pueden inscribirse nombres aborígenes como prenombres?</div>
+              <div class="faq-respuesta">Sí. Pueden inscribirse nombres aborígenes o derivados de voces aborígenes autóctonas y latinoamericanas.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-pregunta">¿Qué pasa si usaba un prenombre antes de ser inscripto en el Registro?</div>
+              <div class="faq-respuesta">Pueden anotarte con ese prenombre siempre que cumpla los requisitos exigidos por la ley.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apellido hijos -->
+        <div id="apellido-hijos" class="tramite-card mb-4">
+          <h2 class="tramite-section-title"><i class="bi bi-people me-2"></i>Apellido de los hijos</h2>
+          <p class="text-muted small">El Código Civil y Comercial establece las reglas sobre la adquisición del apellido de los hijos según el tipo de filiación (matrimonial, extramatrimonial, adoptiva). Para mayor información, consultá en la oficina del Registro Civil o solicitá un turno.</p>
+          <a href="turnos.html" class="btn btn-outline-rc-red btn-sm">Consultar en persona <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+
+        <!-- Apellido casados -->
+        <div id="apellido-casados" class="tramite-card mb-4">
+          <h2 class="tramite-section-title"><i class="bi bi-heart me-2"></i>Apellido de las personas casadas</h2>
+          <p class="text-muted small">Las personas casadas pueden optar por añadir el apellido del cónyuge precedido de la preposición "de" o antepuesto/pospuesto al propio, según la normativa vigente del Código Civil y Comercial. Para consultas específicas, acercate al Registro Civil.</p>
+          <a href="turnos.html" class="btn btn-outline-rc-red btn-sm">Consultar en persona <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+
+        <!-- Cambio de nombre -->
+        <div id="cambio" class="tramite-card mb-4">
+          <h2 class="tramite-section-title"><i class="bi bi-pencil-square me-2"></i>Cambio de nombre</h2>
+          <p class="text-muted small">El cambio de prenombre o apellido solo procede si existen justos motivos a criterio del juez. Se tramita por vía judicial. Para más información, consultá en el Registro Civil o acercate con un asesor legal.</p>
+          <a href="turnos.html" class="btn btn-outline-rc-red btn-sm">Consultar en persona <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+
+        <!-- Protección del nombre -->
+        <div id="proteccion" class="tramite-card mb-4">
+          <h2 class="tramite-section-title"><i class="bi bi-shield-check me-2"></i>Protección del nombre</h2>
+          <p class="text-muted small">Toda persona tiene derecho a exigir que se la designe por su nombre. En caso de uso indebido, puede reclamar el cese y los daños y perjuicios correspondientes, según lo establece el Código Civil y Comercial.</p>
+        </div>
+
+      </div>
+
+      <!-- LATERAL -->
+      <div class="col-lg-4">
+
+        <div class="tramite-sidebar-card mb-3">
+          <div class="sidebar-costo"><i class="bi bi-cash-coin me-2"></i>Costo</div>
+          <div class="sidebar-costo-valor text-success">
+            <i class="bi bi-check-circle-fill me-1"></i>Gratuito
+          </div>
+          <p class="text-muted small mb-0">La inscripción del nombre en el Registro Civil no tiene costo.</p>
+        </div>
+
+        <div class="tramite-sidebar-card mb-3">
+          <h6 class="sidebar-label"><i class="bi bi-calendar-check me-2"></i>Sacar turno</h6>
+          <p class="small text-muted mb-3">¿Tenés dudas sobre el nombre? Consultá en el Registro Civil.</p>
+        </div>
+
+        <div class="tramite-sidebar-card mb-3">
+          <h6 class="sidebar-label"><i class="bi bi-book me-2"></i>Marco legal</h6>
+          <ul class="list-unstyled small mb-0">
+            <li><i class="bi bi-file-earmark-text me-1 text-rc-red"></i>Código Civil y Comercial de la Nación – Libro Primero, Título I, Capítulo 4</li>
+          </ul>
+        </div>
+
+        <div class="tramite-sidebar-card">
+          <h6 class="sidebar-label"><i class="bi bi-lightbulb me-2"></i>¿Sabías que...?</h6>
+          <p class="small text-muted mb-0">Los nombres aborígenes o derivados de voces aborígenes autóctonas y latinoamericanas <strong>pueden inscribirse</strong> en el Registro Civil sin restricciones.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-dark text-white py-4 mt-5">
+    <div class="container text-center">
+      <p class="mb-0 small">© 2025 Registro Civil – Santiago del Estero. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

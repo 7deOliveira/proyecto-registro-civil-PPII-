@@ -596,6 +596,8 @@ function updateBadges() {
   } catch {}
 }
 window.addEventListener('storage', updateBadges);
+// Actualizar badge cada 5s por si hay nuevos turnos del ciudadano
+setInterval(updateBadges, 5000);
 setTimeout(updateBadges, 600);
 
 /* ── Mobile sidebar toggle ── */

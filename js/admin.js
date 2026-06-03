@@ -210,7 +210,45 @@ function applyPermissions() {
 const ModTurnos = {
   ESTADOS:  ['Pendiente','Asistió','No asistió','Cancelado'],
 
-  load()    { return Store.get(STORAGE_KEYS.TURNOS) || []; },
+  load() {
+    // Lee rc_turnos (fuente principal) y fusiona rc_turnos_dni (clave legacy)
+    const principal = Store.get(STORAGE_KEYS.TURNOS) || [];
+    const legacy    = JSON.parse(localStorage.getItem('rc_turnos_dni') || '[]');
+
+    if (legacy.length > 0) {
+      // Migrar legacy al esquema del admin y limpiar clave vieja
+      const idsExistentes = new Set(principal.map(t => String(t.numero || t.id)));
+      let maxId = principal.length > 0 ? Math.max(...principal.map(t => Number(t.id) || 0)) : 0;
+
+      legacy.forEach(t => {
+        const numero = t.id || t.numero || '';
+        if (!idsExistentes.has(String(numero))) {
+          maxId++;
+          principal.push({
+            id:      maxId,
+            numero:  t.id || t.numero || `RC-MIGR-${maxId}`,
+            fecha:   t.fecha   || '',
+            hora:    t.horario || t.hora || '',
+            nombre:  t.nombre  ? (t.apellido ? `${t.nombre} ${t.apellido}` : t.nombre) : '',
+            dni:     t.dni     || '',
+            mail:    t.email   || t.mail || '',
+            tramite: t.tramite || '',
+            estado:  t.estado  === 'pendiente' ? 'Pendiente' : (t.estado || 'Pendiente'),
+            telefono: t.telefono || '',
+            observaciones: t.observaciones || '',
+            origen:  'ciudadano',
+            creado:  t.creado || ''
+          });
+        }
+      });
+
+      // Guardar fusión y limpiar legacy
+      Store.set(STORAGE_KEYS.TURNOS, principal);
+      localStorage.removeItem('rc_turnos_dni');
+    }
+
+    return principal;
+  },
   save(arr) { Store.set(STORAGE_KEYS.TURNOS, arr); },
 
   render(filtro = '') {
