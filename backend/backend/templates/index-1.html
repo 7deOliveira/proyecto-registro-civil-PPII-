@@ -5,17 +5,71 @@
 
 {% block contenido %}
 
-  <!-- Buscador -->
-  <div class="search-wrap">
+<!-- Buscador -->
+<div class="search-wrap">
+  <div style="position:relative; width:100%; max-width:540px;">
     <div class="search-box">
-      <input type="text" placeholder="Buscar trámite, sede u oficina…" aria-label="Buscar"/>
-      <button type="button" aria-label="Buscar"><i class="bi bi-search"></i></button>
+      <input type="text" id="buscador-input" placeholder="Buscar trámite, sede u oficina…" aria-label="Buscar" autocomplete="off"/>
+      <button type="button" id="buscador-btn" aria-label="Buscar"><i class="bi bi-search"></i></button>
+    </div>
+    <div id="buscador-resultados" style="
+      display:none; position:absolute; z-index:200;
+      background:#fff; border:1px solid #ddd; border-top:none;
+      border-radius:0 0 10px 10px; width:100%;
+      box-shadow:0 8px 24px rgba(0,0,0,.12); overflow:hidden;
+      top:100%; left:0;
+    "></div>
+  </div>
+</div>
+
+<!-- Carrusel -->
+<div id="carouselRC" class="carousel slide carousel-rc" data-bs-ride="carousel" data-bs-interval="10000">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#carouselRC" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Diapositiva 1"></button>
+    <button type="button" data-bs-target="#carouselRC" data-bs-slide-to="1" aria-label="Diapositiva 2"></button>
+    <button type="button" data-bs-target="#carouselRC" data-bs-slide-to="2" aria-label="Diapositiva 3"></button>
+  </div>
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <div class="carousel-slide-content">
+        <div class="carousel-text">
+          <h3>Abierto: Lunes a Viernes</h3>
+          <p>Horario de atención: <strong>09:00 a 13:00 hs.</strong></p>
+          <p style="font-size:12px;margin-top:4px;opacity:.8">Registro Civil de la Provincia de Santiago del Estero</p>
+        </div>
+        <div class="carousel-icon-circle"><i class="bi bi-clock-fill"></i></div>
+      </div>
+    </div>
+    <div class="carousel-item slide-2">
+      <div class="carousel-slide-content">
+        <div class="carousel-text">
+          <h3>Trámites en línea disponibles</h3>
+          <p>Iniciá tu trámite desde casa, sin necesidad de concurrir a la sede.</p>
+          <a href="{% url 'tramites' %}" class="carousel-cta">Ver trámites</a>
+        </div>
+        <div class="carousel-icon-circle"><i class="bi bi-laptop-fill"></i></div>
+      </div>
+    </div>
+    <div class="carousel-item slide-3">
+      <div class="carousel-slide-content">
+        <div class="carousel-text">
+          <h3>Turno previo obligatorio</h3>
+          <p>Para atención presencial solicitá tu turno con anticipación.</p>
+          <a href="#" class="carousel-cta">Solicitar turno</a>
+        </div>
+        <div class="carousel-icon-circle"><i class="bi bi-calendar-check-fill"></i></div>
+      </div>
     </div>
   </div>
-
-  <!-- Carrusel -->
-  <div id="carouselRC" class="carousel slide carousel-rc" data-bs-ride="carousel" data-bs-interval="10000">
-  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselRC" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Anterior</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselRC" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Siguiente</span>
+  </button>
+</div>
 
   <!-- Trámites principales -->
   <p class="section-title">Trámites principales</p>
