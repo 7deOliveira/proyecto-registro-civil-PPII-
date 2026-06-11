@@ -125,6 +125,18 @@ body {
   margin-top: 2px;
 }
 
+.logo-ministerio-mobile {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-top: 1px solid #f0f0f0;
+  text-decoration: none;
+  color: var(--rc-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 /* ═══════════════════════════════════════════════════
   CONTENIDO INTERIOR
    ═══════════════════════════════════════════════════ */
@@ -186,16 +198,15 @@ body {
   background: var(--rc-red);
   min-height: 155px;
   padding: 30px 40px;
-  display: flex;
-  align-items: center;
 }
 
-.carousel-slide-content {
+.carousel-rc .carousel-item .carousel-slide-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   gap: 28px;
+  min-height: 95px;
 }
 
 .carousel-text h3 {
@@ -553,4 +564,19 @@ footer a i { margin-right: 6px; }
 @media (max-width: 480px) {
   .logo-sde { font-size: 17px; }
   .navbar-rc { padding: 0 16px; }
+}
+
+@media (max-width: 767px) {
+  .logo-ministerio-mobile { display: flex; }
+}
+
+@media (max-width: 767px) {
+  .navbar-rc {
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+
+  #btn-menu {
+    margin-left: auto;
+  }
 }
