@@ -103,6 +103,12 @@
     </button>
   </div>
 
+  <button class="adm-nav-item" data-section="sedes">
+    <i class="bi bi-geo-alt-fill"></i>
+    <span>Gestión de Sedes</span>
+    <span class="adm-nav-badge" id="nav-badge-sedes">0</span>
+  </button>
+
   <div class="adm-sidebar-section" style="margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,.06);">
     <span class="adm-sidebar-label">Sistema</span>
     <a href="{% url 'inicio' %}" class="adm-nav-item" style="text-decoration:none;">
@@ -293,6 +299,84 @@
     </div>
   </section>
 
+  <!-- ─────────────── SECCIÓN SEDES ─────────────── -->
+<section id="sec-sedes" class="adm-section">
+
+  <div class="adm-page-header">
+    <h2><i class="bi bi-geo-alt-fill"></i> Gestión de Sedes</h2>
+    <button class="btn-adm-primary" id="btn-nueva-sede">
+      <i class="bi bi-plus-circle"></i> Nueva sede
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon blue"><i class="bi bi-geo-alt"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-total-sedes">0</div>
+          <div class="adm-stat-label">Total sedes</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon green"><i class="bi bi-check-circle"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-sedes-activas">0</div>
+          <div class="adm-stat-label">Activas</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-sedes-pendientes">0</div>
+          <div class="adm-stat-label">Pendientes aprobación</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="adm-card">
+    <div class="adm-card-header">
+      <h5><i class="bi bi-table"></i> Listado de sedes</h5>
+      <div class="adm-filters">
+        <input type="text" class="adm-filter-input" id="filtro-sede"
+          placeholder="Buscar por nombre o dirección…" style="min-width:220px;"/>
+        <select class="adm-filter-input" id="filtro-sede-estado" style="min-width:140px;">
+          <option value="">Todos los estados</option>
+          <option value="true">Activas</option>
+          <option value="false">Pendientes</option>
+        </select>
+      </div>
+    </div>
+    <div class="adm-card-body p-0">
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Dirección</th>
+              <th>Departamento</th>
+              <th>Horario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-sedes">
+            <tr><td colspan="6" class="text-center py-4 text-muted">Cargando sedes…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+
 </main>
 
 <!-- ══════════════════════════════════════════
@@ -465,6 +549,94 @@
       <div class="modal-footer" style="gap:10px;">
         <button class="btn-adm-secondary" data-bs-dismiss="modal"><i class="bi bi-x"></i> Cancelar</button>
         <button class="btn-adm-primary" id="btn-guardar-noticia"><i class="bi bi-check-lg"></i> Publicar noticia</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Sede -->
+<div class="modal fade" id="modal-sede" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header adm-modal-header">
+        <h5 class="modal-title" id="modal-sede-titulo">Nueva Sede</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="form-sede" novalidate>
+          <input type="hidden" name="sede-id"/>
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Nombre de la oficina <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-nombre" class="adm-form-control"
+                  placeholder="Ej: Registro Civil – Casa de Gobierno" required/>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Dirección <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-direccion" class="adm-form-control"
+                  placeholder="Ej: Av. Belgrano (S) 1400" required/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Departamento <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-departamento" class="adm-form-control"
+                  placeholder="Ej: Capital" required/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Provincia</label>
+                <input type="text" name="sede-provincia" class="adm-form-control"
+                  value="Santiago del Estero"/>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Horario <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-horario" class="adm-form-control"
+                  placeholder="Ej: Lunes a Viernes 08:00 a 13:00 hs." required/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Latitud<small class="text-muted">(opcional)</small></label>
+                <input type="number" name="sede-lat" class="adm-form-control"
+                  placeholder="Se calcula automáticamente" step="0.000001"/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Longitud<small class="text-muted">(opcional)</small></label>
+                <input type="number" name="sede-lng" class="adm-form-control"
+                  placeholder="Se calcula automáticamente" step="0.000001"/>
+              </div>
+            </div>
+            {% if es_superadmin %}
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Estado</label>
+                <select name="sede-activo" class="adm-form-control">
+                  <option value="false">Pendiente de aprobación</option>
+                  <option value="true">Activa (aprobada)</option>
+                </select>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="gap:10px;">
+        <button class="btn-adm-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x"></i> Cancelar
+        </button>
+        <button class="btn-adm-primary" id="btn-guardar-sede"
+          onclick="ModSedes.handleFormSave()">
+          <i class="bi bi-check-lg"></i> Guardar sede
+        </button>
       </div>
     </div>
   </div>

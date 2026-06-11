@@ -79,3 +79,29 @@ def defuncion(request):
 
 def matrimonio(request):
     return render(request, 'matrimonio.html')
+
+from sedes.models import Sede
+
+def sedes(request):
+    sedes_activas = Sede.objects.filter(activo=True).values(
+        'id', 'nombre', 'direccion', 'departamento', 'provincia', 'horario', 'latitud', 'longitud'
+    )
+    import json
+    from decimal import Decimal
+
+    sedes_list = []
+    for s in sedes_activas:
+        sedes_list.append({
+            'id':           s['id'],
+            'nombre':       s['nombre'],
+            'direccion':    s['direccion'],
+            'departamento': s['departamento'],
+            'provincia':    s['provincia'],
+            'horario':      s['horario'],
+            'lat':          float(s['latitud'])  if s['latitud']  else None,
+            'lng':          float(s['longitud']) if s['longitud'] else None,
+        })
+
+    return render(request, 'sedes.html', {
+        'sedes_json': json.dumps(sedes_list)
+    })

@@ -646,11 +646,227 @@ function initLogin() {
 }
 
 /* ════════════════════════════════════════════════
+  MÓDULO SEDES
+   ════════════════════════════════════════════════ */
+const ModSedes = {
+
+  _cache: [],
+
+abrirEdicion(id) {
+  const sede = this._cache.find(s => s.id === id);
+  if (sede) this.openModal(sede);
+},
+
+  async cargar() {
+    const r    = await fetch('/api/sedes/');
+    const data = await r.json();
+    return data.sedes || [];
+  },
+
+  render(sedes) {
+    this._cache = sedes;
+    const tbody  = document.getElementById('tbody-sedes');
+    if (!tbody) return;
+
+    const statTotal     = document.getElementById('stat-total-sedes');
+    const statActivas   = document.getElementById('stat-sedes-activas');
+    const statPendientes = document.getElementById('stat-sedes-pendientes');
+    const badge         = document.getElementById('nav-badge-sedes');
+
+    if (statTotal)      statTotal.innerText      = sedes.length;
+    if (statActivas)    statActivas.innerText     = sedes.filter(s => s.activo).length;
+    if (statPendientes) statPendientes.innerText  = sedes.filter(s => !s.activo).length;
+    if (badge)          badge.textContent         = sedes.length;
+
+    if (sedes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No hay sedes registradas.</td></tr>`;
+      return;
+    }
+
+  tbody.innerHTML = sedes.map(s => `
+  <tr data-id="${s.id}">
+    <td><strong>${s.nombre}</strong></td>
+    <td>${s.direccion}</td>
+    <td>${s.departamento}</td>
+    <td>${s.horario}</td>
+    <td>
+      <span class="badge-estado ${s.activo ? 'badge-asistio' : 'badge-pendiente'}">
+        ${s.activo ? 'Activa' : 'Pendiente'}
+      </span>
+    </td>
+    <td>
+      <button class="btn-adm-icon edit" title="Editar"
+        onclick='ModSedes.openModal(${JSON.stringify(s)})'>
+        <i class="bi bi-pencil-square"></i>
+      </button>
+      <button class="btn-adm-icon trash" title="Eliminar"
+        onclick="ModSedes.eliminar(${s.id})">
+        <i class="bi bi-trash3"></i>
+      </button>
+    </td>
+  </tr>
+`).join('');
+
+    // Filtros
+    this.aplicarFiltros(sedes);
+  },
+
+  aplicarFiltros(sedes) {
+    const filtroNombre  = document.getElementById('filtro-sede');
+    const filtroEstado  = document.getElementById('filtro-sede-estado');
+
+    const filtrar = () => {
+      const texto  = filtroNombre?.value.toLowerCase() || '';
+      const estado = filtroEstado?.value;
+
+      const filtradas = sedes.filter(s => {
+        const coincideTexto  = !texto || s.nombre.toLowerCase().includes(texto) || s.direccion.toLowerCase().includes(texto);
+        const coincideEstado = estado === '' || s.activo.toString() === estado;
+        return coincideTexto && coincideEstado;
+      });
+
+      const tbody = document.getElementById('tbody-sedes');
+      if (!tbody) return;
+
+      if (filtradas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No hay resultados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtradas.map(s => `
+        <tr>
+          <td><strong>${s.nombre}</strong></td>
+          <td>${s.direccion}</td>
+          <td>${s.departamento}</td>
+          <td>${s.horario}</td>
+          <td><span class="badge-estado ${s.activo ? 'badge-asistio' : 'badge-pendiente'}">
+            ${s.activo ? 'Activa' : 'Pendiente'}
+          </span></td>
+          <td>
+            <button class="btn-adm-icon edit" title="Editar"
+  onclick="ModSedes.abrirEdicion(${s.id})">
+  <i class="bi bi-pencil-square"></i>
+</button>
+            <button class="btn-adm-icon trash" data-eliminar="${s.id}" title="Eliminar">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    };
+
+    filtroNombre?.addEventListener('input', filtrar);
+    filtroEstado?.addEventListener('change', filtrar);
+  },
+
+  openModal(sede = null) {
+    const form   = document.getElementById('form-sede');
+    const titulo = document.getElementById('modal-sede-titulo');
+    if (!form) return;
+
+    if (sede) {
+      titulo.textContent                          = 'Editar Sede';
+      form['sede-id'].value                       = sede.id;
+      form['sede-nombre'].value                   = sede.nombre;
+      form['sede-direccion'].value                = sede.direccion;
+      form['sede-departamento'].value             = sede.departamento;
+      form['sede-provincia'].value                = sede.provincia;
+      form['sede-horario'].value                  = sede.horario;
+      form['sede-lat'].value                      = sede.lat;
+      form['sede-lng'].value                      = sede.lng;
+      if (form['sede-activo'])
+        form['sede-activo'].value                 = sede.activo.toString();
+    } else {
+      titulo.textContent = 'Nueva Sede';
+      form.reset();
+      form['sede-id'].value      = '';
+      form['sede-provincia'].value = 'Santiago del Estero';
+    }
+
+    new bootstrap.Modal(document.getElementById('modal-sede')).show();
+  },
+
+  async handleFormSave() {
+    const form = document.getElementById('form-sede');
+    if (!form) return;
+
+    const id           = form['sede-id'].value;
+    const nombre       = form['sede-nombre'].value.trim();
+    const direccion    = form['sede-direccion'].value.trim();
+    const departamento = form['sede-departamento'].value.trim();
+    const provincia    = form['sede-provincia'].value.trim();
+    const horario      = form['sede-horario'].value.trim();
+    const lat          = form['sede-lat'].value;
+    const lng          = form['sede-lng'].value;
+    const activo       = form['sede-activo'] ? form['sede-activo'].value === 'true' : false;
+
+    if (!nombre || !direccion || !departamento || !horario) {
+      Toast.show('Completá los campos obligatorios.', 'error');
+      return;
+    }
+
+    const url  = id ? `/api/sedes/${id}/editar/` : '/api/sedes/crear/';
+    const body = { nombre, direccion, departamento, provincia, horario, lat, lng, activo };
+
+    try {
+      const r    = await fetch(url, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':  this.getCookie('csrftoken'),
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+
+      bootstrap.Modal.getInstance(document.getElementById('modal-sede'))?.hide();
+      Toast.show(id ? 'Sede actualizada.' : 'Sede creada correctamente.', 'success');
+      await this.init();
+
+    } catch { Toast.show('Error al guardar sede.', 'error'); }
+  },
+
+  async eliminar(id) {
+    if (!confirm('¿Eliminar esta sede? Esta acción no se puede deshacer.')) return;
+
+    try {
+      const r    = await fetch(`/api/sedes/${id}/eliminar/`, {
+        method:  'POST',
+        headers: { 'X-CSRFToken': this.getCookie('csrftoken') },
+      });
+      const data = await r.json();
+
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+      Toast.show('Sede eliminada.', 'warning');
+      await this.init();
+
+    } catch { Toast.show('Error al eliminar sede.', 'error'); }
+  },
+
+  getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  },
+
+  async init() {
+    const btnNueva = document.getElementById('btn-nueva-sede');
+    if (btnNueva) btnNueva.onclick = () => this.openModal();
+
+    const sedes = await this.cargar();
+    this.render(sedes);
+  }
+};
+
+/* ════════════════════════════════════════════════
    11. INIT GENERAL ADMIN
    ════════════════════════════════════════════════ */
 
 function initAdmin() {
   if (!document.querySelector('.admin-body')) return;
+  if (document.getElementById('sec-sedes')) ModSedes.init();
 
   // Guard de autenticación
   /* Auth.guard(); */
@@ -682,8 +898,16 @@ if (userDisplay) {
 }
 
 /* ════════════════════════════════════════════════
-   12. BOOTSTRAP
+  12. BOOTSTRAP
    ════════════════════════════════════════════════ */
+
+   // Limpiar backdrop de modales al cerrar
+document.addEventListener('hidden.bs.modal', () => {
+  document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow   = '';
+  document.body.style.paddingRight = '';
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   initLogin();
