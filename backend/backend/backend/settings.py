@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'cuentas',
     'usuarios',
     'sedes',
+    'tramites_app',
 ]
 
 MIDDLEWARE = [

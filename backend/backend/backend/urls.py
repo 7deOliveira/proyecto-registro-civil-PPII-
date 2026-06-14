@@ -22,4 +22,5 @@ urlpatterns = [
     path('', include('cuentas.urls')),
     path('', include('usuarios.urls')),
     path('', include('sedes.urls')),
+    path('', include('tramites_app.urls')),
 ]

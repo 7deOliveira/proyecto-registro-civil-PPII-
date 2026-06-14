@@ -6,7 +6,7 @@
 'use strict';
 
 /* ════════════════════════════════════════════════
-   1. CONFIGURACIÓN Y CONSTANTES
+  1. CONFIGURACIÓN Y CONSTANTES
    ════════════════════════════════════════════════ */
 
 // Credenciales obfuscadas (base64). No exposición directa en código.
@@ -130,7 +130,7 @@ const Toast = {
 };
 
 /* ════════════════════════════════════════════════
-   6. NAVEGACIÓN (sidebar)
+  6. NAVEGACIÓN (sidebar)
    ════════════════════════════════════════════════ */
 
 function initNav() {
@@ -138,21 +138,22 @@ function initNav() {
     item.addEventListener('click', () => {
       const target = item.dataset.section;
 
-      // Activar nav
       document.querySelectorAll('.adm-nav-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
 
-      // Mostrar sección
       document.querySelectorAll('.adm-section').forEach(s => s.classList.remove('active'));
       const sec = document.getElementById(`sec-${target}`);
       if (sec) sec.classList.add('active');
 
-      // Cerrar sidebar en mobile
+      // Inicializar módulo al activar sección
+      if (target === 'tramites-panel') ModTramites.init();
+      if (target === 'sedes')          ModSedes.init();
+      if (target === 'usuarios')       ModUsuarios.init();
+
       document.querySelector('.adm-sidebar')?.classList.remove('open');
     });
   });
 
-  // Botón hamburguesa mobile
   document.getElementById('adm-menu-toggle')?.addEventListener('click', () => {
     document.querySelector('.adm-sidebar')?.classList.toggle('open');
   });
@@ -326,7 +327,7 @@ const ModTurnos = {
 };
 
 /* ════════════════════════════════════════════════
-   8. MÓDULO USUARIOS
+  8. MÓDULO USUARIOS
    ════════════════════════════════════════════════ */
 
 const ModUsuarios = {
@@ -495,7 +496,7 @@ async init() {
 };
 
 /* ════════════════════════════════════════════════
-   9. MÓDULO NOTICIAS
+  9. MÓDULO NOTICIAS
    ════════════════════════════════════════════════ */
 
 const ModNoticias = {
@@ -613,7 +614,298 @@ const ModNoticias = {
 };
 
 /* ════════════════════════════════════════════════
-   10. LOGIN (login.html)
+  10. MÓDULO TRÁMITES
+   ════════════════════════════════════════════════ */
+const ModTramites = {
+
+  async cargar() {
+    const r    = await fetch('/api/tramites/');
+    const data = await r.json();
+    return data.tramites || [];
+  },
+
+  async cargarCategorias() {
+    const r    = await fetch('/api/categorias/');
+    const data = await r.json();
+    return data.categorias || [];
+  },
+
+  estadoBadge(estado) {
+    const map = {
+      'borrador':  'badge-cancelado',
+      'revision':  'badge-pendiente',
+      'publicado': 'badge-asistio',
+      'archivado': 'badge-noasistio',
+    };
+    const labels = {
+      'borrador':  'Borrador',
+      'revision':  'En revisión',
+      'publicado': 'Publicado',
+      'archivado': 'Archivado',
+    };
+    return `<span class="badge-estado ${map[estado] || ''}">${labels[estado] || estado}</span>`;
+  },
+
+  render(tramites) {
+    const tbody = document.getElementById('tbody-tramites-panel');
+    if (!tbody) return;
+
+    const statTotal      = document.getElementById('stat-total-tramites-panel');
+    const statPublicados = document.getElementById('stat-tramites-publicados');
+    const statPendientes = document.getElementById('stat-tramites-pendientes');
+    const badge          = document.getElementById('nav-badge-tramites-panel');
+
+    if (statTotal)      statTotal.innerText      = tramites.length;
+    if (statPublicados) statPublicados.innerText  = tramites.filter(t => t.estado === 'publicado').length;
+    if (statPendientes) statPendientes.innerText  = tramites.filter(t => t.estado === 'revision').length;
+    if (badge)          badge.textContent         = tramites.length;
+
+    this.renderTabla(tramites, tbody);
+    this.aplicarFiltros(tramites);
+  },
+
+  renderTabla(tramites, tbody) {
+    if (tramites.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No hay trámites registrados.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = tramites.map(t => `
+      <tr>
+        <td><strong>${t.nombre}</strong></td>
+        <td>${t.categoria}</td>
+        <td><code style="font-size:12px;">${t.slug}</code></td>
+        <td>${this.estadoBadge(t.estado)}</td>
+        <td>${t.creado_por}</td>
+        <td>
+          <button class="btn-adm-icon edit btn-editar-tramite"
+            data-id="${t.id}" data-nombre="${t.nombre}"
+            data-categoria="${t.categoria_id || ''}"
+            data-slug="${t.slug}" data-icono="${t.icono}"
+            data-descripcion="${t.descripcion || ''}"
+            data-estado="${t.estado}"
+            title="Editar">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button class="btn-adm-icon trash btn-eliminar-tramite"
+            data-id="${t.id}" title="Eliminar">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('.btn-editar-tramite').forEach(btn => {
+      btn.onclick = () => this.openModal({
+        id:          btn.dataset.id,
+        nombre:      btn.dataset.nombre,
+        categoria:   btn.dataset.categoria,
+        slug:        btn.dataset.slug,
+        icono:       btn.dataset.icono,
+        descripcion: btn.dataset.descripcion,
+        estado:      btn.dataset.estado,
+      });
+    });
+
+    tbody.querySelectorAll('.btn-eliminar-tramite').forEach(btn => {
+      btn.onclick = () => this.eliminar(btn.dataset.id);
+    });
+  },
+
+  aplicarFiltros(tramites) {
+    const filtroNombre = document.getElementById('filtro-tramite-panel');
+    const filtroEstado = document.getElementById('filtro-tramite-estado');
+    const tbody        = document.getElementById('tbody-tramites-panel');
+
+    const filtrar = () => {
+      const texto  = filtroNombre?.value.toLowerCase() || '';
+      const estado = filtroEstado?.value;
+
+      const filtrados = tramites.filter(t => {
+        const coincideTexto  = !texto || t.nombre.toLowerCase().includes(texto);
+        const coincideEstado = !estado || t.estado === estado;
+        return coincideTexto && coincideEstado;
+      });
+
+      this.renderTabla(filtrados, tbody);
+    };
+
+    filtroNombre?.addEventListener('input',  filtrar);
+    filtroEstado?.addEventListener('change', filtrar);
+  },
+
+  async openModal(tramite = null) {
+    const form   = document.getElementById('form-tramite-panel');
+    const titulo = document.getElementById('modal-tramite-panel-titulo');
+    if (!form) return;
+
+    // Cargar categorías en el select
+    const categorias = await this.cargarCategorias();
+    const select     = document.getElementById('select-categoria-tramite');
+    select.innerHTML = '<option value="">Seleccionar categoría</option>';
+    categorias.forEach(c => {
+      const opt      = document.createElement('option');
+      opt.value      = c.id;
+      opt.textContent = c.nombre;
+      select.appendChild(opt);
+    });
+
+    if (tramite) {
+      titulo.textContent                              = 'Editar Trámite';
+      form['tramite-id'].value                        = tramite.id;
+      form['tramite-nombre'].value                    = tramite.nombre;
+      form['tramite-slug'].value                      = tramite.slug;
+      // form['tramite-icono'].value                     = tramite.icono;
+      form['tramite-descripcion'].value               = tramite.descripcion;
+      form['tramite-estado'].value                    = tramite.estado;
+      if (tramite.categoria) select.value             = tramite.categoria;
+      // Deshabilitar slug en edición para no romper URLs
+      form['tramite-slug'].disabled = true;
+      const gratuito = tramite.es_gratuito;
+      document.getElementById('tramite-gratuito').checked = gratuito;
+      document.getElementById('precio-wrap').style.display = gratuito ? 'none' : 'block';
+      if (!gratuito && tramite.precio) form['tramite-precio'].value = tramite.precio;
+    } else {
+      titulo.textContent = 'Nuevo Trámite';
+      form.reset();
+      form['tramite-id'].value      = '';
+      form['tramite-slug'].disabled = false;
+      // form['tramite-icono'].value   = 'bi-file-earmark-text';
+    }
+
+    new bootstrap.Modal(document.getElementById('modal-tramite-panel')).show();
+  },
+
+async handleFormSave() {
+    const form = document.getElementById('form-tramite-panel');
+    if (!form) return;
+
+    const id          = form['tramite-id'].value;
+    const nombre      = form['tramite-nombre'].value.trim();
+    const slug        = form['tramite-slug'].value.trim();
+    const descripcion = form['tramite-descripcion'].value.trim();
+    const estado      = form['tramite-estado'].value;
+    const categoriaId = document.getElementById('select-categoria-tramite').value;
+    const gratuito    = document.getElementById('tramite-gratuito').checked;
+    const precio      = gratuito ? null : (form['tramite-precio'].value || null);
+
+    if (!nombre) { Toast.show('El nombre es obligatorio.', 'error'); return; }
+    if (!id && !slug) { Toast.show('El identificador de URL es obligatorio.', 'error'); return; }
+
+    const url  = id ? `/api/tramites/${id}/editar/` : '/api/tramites/crear/';
+    const body = {
+      nombre, descripcion, estado,
+      categoria_id: categoriaId || null,
+      es_gratuito:  gratuito,
+      precio:       precio,
+    };
+    if (!id) body.slug = slug;
+
+    try {
+      const r    = await fetch(url, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':  this.getCookie('csrftoken'),
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+
+      bootstrap.Modal.getInstance(document.getElementById('modal-tramite-panel'))?.hide();
+      Toast.show(id ? 'Trámite actualizado.' : 'Trámite creado correctamente.', 'success');
+      await this.init();
+
+    } catch { Toast.show('Error al guardar trámite.', 'error'); }
+},
+
+  async eliminar(id) {
+    if (!confirm('¿Eliminar este trámite? Esta acción no se puede deshacer.')) return;
+
+    try {
+      const r    = await fetch(`/api/tramites/${id}/eliminar/`, {
+        method:  'POST',
+        headers: { 'X-CSRFToken': this.getCookie('csrftoken') },
+      });
+      const data = await r.json();
+
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+      Toast.show('Trámite eliminado.', 'warning');
+      await this.init();
+
+    } catch { Toast.show('Error al eliminar trámite.', 'error'); }
+  },
+
+  getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  },
+
+  async init() {
+    const btnNuevo = document.getElementById('btn-nuevo-tramite-panel');
+    if (btnNuevo) btnNuevo.onclick = () => this.openModal();
+
+    const tramites = await this.cargar();
+    this.render(tramites);
+  }
+};
+
+// Botón nueva categoría
+const btnNuevaCat     = document.getElementById('btn-nueva-categoria');
+const btnConfirmarCat = document.getElementById('btn-confirmar-categoria');
+const btnCancelarCat  = document.getElementById('btn-cancelar-categoria');
+const wrapNuevaCat    = document.getElementById('nueva-categoria-wrap');
+
+if (btnNuevaCat) btnNuevaCat.onclick = () => {
+  wrapNuevaCat.style.display = 'block';
+  document.getElementById('nueva-categoria-nombre').focus();
+};
+
+if (btnCancelarCat) btnCancelarCat.onclick = () => {
+  wrapNuevaCat.style.display = 'none';
+  document.getElementById('nueva-categoria-nombre').value = '';
+};
+
+if (btnConfirmarCat) btnConfirmarCat.onclick = async () => {
+  const nombre = document.getElementById('nueva-categoria-nombre').value.trim();
+  const icono  = document.getElementById('nueva-categoria-icono').value;
+
+  if (!nombre) { Toast.show('Escribí el nombre de la categoría.', 'warning'); return; }
+
+  try {
+    const r    = await fetch('/api/categorias/crear/', {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken':  ModTramites.getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ nombre, icono }),
+    });
+    const data = await r.json();
+
+    if (data.error) { Toast.show(data.error, 'error'); return; }
+
+    // Agregar la nueva categoría al select y seleccionarla
+    const opt       = document.createElement('option');
+    opt.value       = data.id;
+    opt.textContent = data.nombre;
+    select.appendChild(opt);
+    select.value = data.id;
+
+    // Ocultar el campo
+    wrapNuevaCat.style.display = 'none';
+    document.getElementById('nueva-categoria-nombre').value = '';
+    Toast.show(`Categoría "${data.nombre}" creada.`, 'success');
+
+  } catch { Toast.show('Error al crear categoría.', 'error'); }
+};
+
+
+/* ════════════════════════════════════════════════
+  11. LOGIN (login.html)
    ════════════════════════════════════════════════ */
 
 function initLogin() {
@@ -646,7 +938,7 @@ function initLogin() {
 }
 
 /* ════════════════════════════════════════════════
-  MÓDULO SEDES
+  12. MÓDULO SEDES
    ════════════════════════════════════════════════ */
 const ModSedes = {
 
@@ -683,7 +975,7 @@ abrirEdicion(id) {
       return;
     }
 
-  tbody.innerHTML = sedes.map(s => `
+tbody.innerHTML = sedes.map(s => `
   <tr data-id="${s.id}">
     <td><strong>${s.nombre}</strong></td>
     <td>${s.direccion}</td>
@@ -695,17 +987,42 @@ abrirEdicion(id) {
       </span>
     </td>
     <td>
-      <button class="btn-adm-icon edit" title="Editar"
-        onclick='ModSedes.openModal(${JSON.stringify(s)})'>
+      <button class="btn-adm-icon edit btn-editar-sede"
+        data-id="${s.id}"
+        data-nombre="${s.nombre.replace(/"/g, '&quot;')}"
+        data-direccion="${s.direccion.replace(/"/g, '&quot;')}"
+        data-departamento="${s.departamento}"
+        data-provincia="${s.provincia}"
+        data-horario="${s.horario.replace(/"/g, '&quot;')}"
+        data-lat="${s.lat || ''}"
+        data-lng="${s.lng || ''}"
+        data-activo="${s.activo}"
+        title="Editar">
         <i class="bi bi-pencil-square"></i>
       </button>
-      <button class="btn-adm-icon trash" title="Eliminar"
-        onclick="ModSedes.eliminar(${s.id})">
+      <button class="btn-adm-icon trash"
+        onclick="ModSedes.eliminar(${s.id})"
+        title="Eliminar">
         <i class="bi bi-trash3"></i>
       </button>
     </td>
   </tr>
 `).join('');
+
+// Asignar eventos a botones editar
+tbody.querySelectorAll('.btn-editar-sede').forEach(btn => {
+  btn.onclick = () => ModSedes.openModal({
+    id:           btn.dataset.id,
+    nombre:       btn.dataset.nombre,
+    direccion:    btn.dataset.direccion,
+    departamento: btn.dataset.departamento,
+    provincia:    btn.dataset.provincia,
+    horario:      btn.dataset.horario,
+    lat:          btn.dataset.lat,
+    lng:          btn.dataset.lng,
+    activo:       btn.dataset.activo === 'true',
+  });
+});
 
     // Filtros
     this.aplicarFiltros(sedes);
@@ -861,12 +1178,13 @@ abrirEdicion(id) {
 };
 
 /* ════════════════════════════════════════════════
-   11. INIT GENERAL ADMIN
+  12. INIT GENERAL ADMIN
    ════════════════════════════════════════════════ */
 
 function initAdmin() {
   if (!document.querySelector('.admin-body')) return;
   if (document.getElementById('sec-sedes')) ModSedes.init();
+  if (document.getElementById('sec-tramites-panel')) ModTramites.init();
 
   // Guard de autenticación
   /* Auth.guard(); */
