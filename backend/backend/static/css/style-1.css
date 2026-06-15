@@ -489,7 +489,7 @@ footer a i { margin-right: 6px; }
   text-align: center;
 }
 
-.tramite-card {
+.tramite-card-simple {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -499,7 +499,7 @@ footer a i { margin-right: 6px; }
   padding: 18px 20px;
   transition: box-shadow .2s, transform .2s;
 }
-.tramite-card:hover {
+.tramite-card-simple:hover {
   box-shadow: 0 4px 16px rgba(200,16,46,.12);
   transform: translateY(-2px);
 }
@@ -556,18 +556,46 @@ footer a i { margin-right: 6px; }
   font-size: 12px;
   color: #888;
   line-height: 1.4;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: normal;
+  overflow:visible;
   text-overflow: ellipsis;
 }
 
 /* ═══════════════════════════════════════════════════
   RESPONSIVE
    ═══════════════════════════════════════════════════ */
-@media (max-width: 767px) {
-  .page-content { padding: 16px 16px 32px; }
 
-  .nav-links { 
+/* ── Desktop grande — expandir el wrapper ── */
+@media (min-width: 1200px) {
+  .page-wrapper { max-width: 1140px; }
+}
+
+@media (min-width: 1400px) {
+  .page-wrapper { max-width: 1320px; }
+}
+
+/* ── Tablet ── */
+@media (max-width: 991px) {
+  .page-wrapper { max-width: 100%; }
+  .page-content { padding: 18px 20px 36px; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 767px) {
+  .page-wrapper { max-width: 100%; box-shadow: none; }
+  .page-content { padding: 14px 14px 28px; }
+
+  /* Navbar */
+  .navbar-rc {
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+  #btn-menu { display: block !important; }
+  .logo-ministerio-wrap { display: none; }
+  .logo-ministerio-mobile { display: flex; }
+
+  /* Menú desplegable */
+  .nav-links {
     display: none;
     flex-direction: column;
     position: absolute;
@@ -580,11 +608,7 @@ footer a i { margin-right: 6px; }
     padding: 8px 0;
     z-index: 999;
   }
-
-    .nav-links.open {
-    display: flex;
-  }
-
+  .nav-links.open { display: flex; }
   .nav-links a {
     padding: 12px 24px;
     border-radius: 0;
@@ -592,35 +616,40 @@ footer a i { margin-right: 6px; }
     border-bottom: 1px solid #f5f5f5;
   }
 
-  /* Mostrar hamburguesa */
-  #btn-menu { display: block !important; }
+  /* Carrusel */
+  .carousel-rc .carousel-item { padding: 18px 16px; min-height: 110px; }
+  .carousel-text h3 { font-size: 18px; }
+  .carousel-icon-circle { width: 56px; height: 56px; font-size: 24px; }
+  .carousel-slide-content { gap: 12px; }
 
-  /* Ocultar logo ministerio en mobile */
-  .logo-ministerio-wrap { display: none; }
+  /* Cards de trámites en listado */
+  .tramite-item-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+  }
+  .tramite-item-card .btn-rc {
+    align-self: stretch;
+    text-align: center;
+    width: 100%;
+    margin-top: 8px;
+  }
 
-  .carousel-rc .carousel-item { padding: 20px 20px; min-height: 120px; }
-  .carousel-text h3 { font-size: 20px; }
-  .carousel-icon-circle { width: 64px; height: 64px; font-size: 28px; }
+  /* Cards de servicios en inicio */
+  .service-card { padding: 20px 10px 16px; }
+  .service-card .svc-icon { font-size: 36px; margin-bottom: 10px; }
+  .service-card .svc-label { font-size: 11px; letter-spacing: 1.5px; }
 
-  footer { padding: 28px 16px 16px; }
+  /* Footer */
+  footer { padding: 24px 14px 14px; }
+  .footer-bottom { font-size: 10px; }
 }
 
+/* ── Mobile chico ── */
 @media (max-width: 480px) {
-  .logo-sde { font-size: 17px; }
-  .navbar-rc { padding: 0 16px; }
-}
-
-@media (max-width: 767px) {
-  .logo-ministerio-mobile { display: flex; }
-}
-
-@media (max-width: 767px) {
-  .navbar-rc {
-    justify-content: space-between;
-    padding: 0 16px;
-  }
-
-  #btn-menu {
-    margin-left: auto;
-  }
+  .navbar-rc { padding: 0 12px; }
+  .page-content { padding: 12px 12px 24px; }
+  .carousel-text h3 { font-size: 15px; }
+  .carousel-icon-circle { width: 48px; height: 48px; font-size: 20px; }
 }

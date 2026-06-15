@@ -319,13 +319,105 @@ select.adm-form-control { cursor: pointer; }
 .adm-empty p { font-size: 14px; }
 
 /* ════════════════════ RESPONSIVE ════════════════════ */
+
+/* ── Tablet ── */
 @media (max-width: 991px) {
   :root { --adm-sidebar-w: 200px; }
+  .adm-main { padding: 20px; }
 }
+
+/* ── Mobile ── */
 @media (max-width: 767px) {
-  .adm-sidebar { transform: translateX(-100%); transition: transform .3s ease; }
+
+  /* Sidebar oculto por defecto */
+  .adm-sidebar {
+    transform: translateX(-100%);
+    transition: transform .3s ease;
+    z-index: 300;
+  }
   .adm-sidebar.open { transform: translateX(0); }
-  .adm-main { margin-left: 0; padding: 20px 16px; }
-  .adm-topbar-left { width: auto; }
+
+  /* Overlay cuando sidebar está abierto */
+  .adm-sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 299;
+  }
+  .adm-sidebar-overlay.open { display: block; }
+
+  /* Main sin margen lateral */
+  .adm-main {
+    margin-left: 0;
+    margin-top: var(--adm-topbar-h);
+    padding: 16px 14px;
+  }
+
+  /* Topbar */
+  .adm-topbar { padding: 0 14px 0 0; }
+  .adm-topbar-left { width: auto; padding: 0 12px; }
   .adm-brand-text { display: none; }
+
+  /* Ocultar texto "Cerrar sesión" — solo ícono */
+  .adm-btn-logout span { display: none; }
+  .adm-btn-logout { padding: 5px 10px; }
+
+  /* Nombre usuario más corto */
+  .adm-user-badge span {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Stat cards — una por fila en mobile chico */
+  .adm-stat-card {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .adm-stat-icon {
+    width: 42px; height: 42px;
+    font-size: 20px;
+  }
+  .adm-stat-value { font-size: 22px; }
+  .adm-stat-label { font-size: 11px; }
+
+  /* Page header */
+  .adm-page-header { margin-bottom: 16px; }
+  .adm-page-header h2 { font-size: 20px; }
+
+  /* Filtros en columna */
+  .adm-filters { flex-direction: column; align-items: stretch; }
+  .adm-filter-input { width: 100%; }
+
+  /* Card header en columna */
+  .adm-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Tabla con scroll horizontal */
+  .adm-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .adm-table { min-width: 500px; }
+  .adm-table thead th { font-size: 11px; padding: 9px 10px; }
+  .adm-table tbody td { padding: 9px 10px; font-size: 12.5px; }
+
+  /* Toast más pequeño */
+  .adm-toast { min-width: 200px; max-width: 280px; font-size: 12.5px; }
+
+  /* Botón hamburguesa en topbar */
+  #adm-hamburger {
+    display: flex !important;
+    background: none; border: none;
+    color: var(--adm-text); font-size: 22px;
+    cursor: pointer; padding: 4px 8px;
+    align-items: center;
+  }
+}
+
+/* ── Mobile chico ── */
+@media (max-width: 480px) {
+  .adm-main { padding: 12px 10px; }
+  .adm-stat-value { font-size: 20px; }
+  .adm-btn-logout { display: none; }
 }

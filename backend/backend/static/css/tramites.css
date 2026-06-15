@@ -379,16 +379,54 @@ body {
 }
 
 /* ---------- RESPONSIVE ---------- */
-@media (max-width: 767.98px) {
-  .tramite-hero-title {
-    font-size: 1.6rem;
+@media (max-width: 991px) {
+  .tramite-hero-title { font-size: 1.8rem; }
+}
+
+@media (max-width: 767px) {
+  .tramite-hero { padding: 1.5rem 0; }
+  .tramite-hero-title { font-size: 1.4rem; }
+  .tramite-hero-icon { width: 44px; height: 44px; font-size: 1.2rem; }
+
+  .tramite-card { padding: 1rem;
+                  overflow: hidden;
+                  word-wrap: break-word;
+                  overflow-wrap: break-word;
+                  }
+  .tramite-intro { font-size: .95rem; }
+
+  /* Columna lateral va abajo en mobile */
+  .tramite-sidebar-card { margin-bottom: 12px; }
+
+  /* Pasos más compactos */
+  .step-num { width: 30px; height: 30px; min-width: 30px; font-size: 1rem; }
+  .step-body { font-size: .9rem; }
+
+  /* Listas */
+  .tramite-list li {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    padding-right: 8px;
   }
-  .tramite-hero-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 1.4rem;
+
+  .col-lg-8, .col-lg-4 {
+    width: 100% !important;
+    max-width: 100% !important;
   }
-  .tramite-card {
-    padding: 1.2rem;
+
+  .tramite-step {
+    gap: 8px;
+  }
+  .step-body {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: calc(100% - 44px);
   }
 }
+
+@media (max-width: 480px) {
+  .tramite-hero-title { font-size: 1.2rem; }
+  .tramite-hero-icon { display: none; }
+  .tramite-section-title { font-size: 1.1rem; }
+}
+
