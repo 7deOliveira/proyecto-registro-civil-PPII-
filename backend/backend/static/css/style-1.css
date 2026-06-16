@@ -271,6 +271,138 @@ body {
   background-color: #fff;
 }
 
+/* ════════════════════ MODAL TURNO ════════════════════ */
+.turno-step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+}
+.turno-step-indicator .step-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #888;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+  transition: all .2s;
+}
+.turno-step-indicator .step-circle.active {
+  background: var(--rc-red);
+  color: #fff;
+}
+.turno-step-indicator .step-circle.done {
+  background: #28a745;
+  color: #fff;
+}
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  min-width: 40px;
+  margin-bottom: 16px;
+}
+
+/* Opciones de trámite */
+.turno-tramite-option { display: block; cursor: pointer; margin: 0; }
+.turno-tramite-option input[type="radio"] { display: none; }
+.turno-tramite-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: all .2s;
+  background: #fff;
+}
+.turno-tramite-card i {
+  font-size: 22px;
+  color: #aaa;
+  flex-shrink: 0;
+  transition: color .2s;
+}
+.turno-tramite-nombre {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1c1c1c;
+}
+.turno-tramite-desc {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+.turno-tramite-option input:checked + .turno-tramite-card {
+  border-color: var(--rc-red);
+  background: rgba(200,16,46,.04);
+}
+.turno-tramite-option input:checked + .turno-tramite-card i {
+  color: var(--rc-red);
+}
+.turno-tramite-card:hover {
+  border-color: var(--rc-red);
+  box-shadow: 0 2px 8px rgba(200,16,46,.1);
+}
+
+/* Inputs */
+.turno-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 6px;
+}
+.turno-input {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: #1c1c1c;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  background: #fff;
+}
+.turno-input:focus {
+  border-color: var(--rc-red);
+  box-shadow: 0 0 0 3px rgba(200,16,46,.1);
+}
+.turno-input.error { border-color: var(--rc-red); }
+
+/* Error */
+.turno-error {
+  background: rgba(200,16,46,.07);
+  border: 1px solid rgba(200,16,46,.25);
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--rc-red);
+  margin-top: 12px;
+}
+
+/* Botón outline */
+.btn-rc-outline {
+  background: transparent;
+  color: var(--rc-red);
+  border: 1.5px solid var(--rc-red);
+  border-radius: 5px;
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all .2s;
+}
+.btn-rc-outline:hover { background: var(--rc-red); color: #fff; }
+
+
 /* ═══════════════════════════════════════════════════
   SECCIÓN TÍTULOS
    ═══════════════════════════════════════════════════ */
@@ -561,6 +693,19 @@ footer a i { margin-right: 6px; }
   text-overflow: ellipsis;
 }
 
+/* Botones dentro del carrusel por encima de los controles */
+.carousel-slide-content .carousel-cta,
+.carousel-slide-content .btn-rc {
+  position: relative;
+  z-index: 10;
+}
+
+/* Bajar z-index de los controles prev/next */
+.carousel-control-prev,
+.carousel-control-next {
+  z-index: 5;
+}
+
 /* ═══════════════════════════════════════════════════
   RESPONSIVE
    ═══════════════════════════════════════════════════ */
@@ -652,4 +797,10 @@ footer a i { margin-right: 6px; }
   .page-content { padding: 12px 12px 24px; }
   .carousel-text h3 { font-size: 15px; }
   .carousel-icon-circle { width: 48px; height: 48px; font-size: 20px; }
+}
+
+/* Responsive modal turno */
+@media (max-width: 767px) {
+  .step-line { min-width: 20px; }
+  .turno-step-indicator span { font-size: 10px; }
 }
