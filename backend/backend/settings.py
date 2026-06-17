@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cuentas',
     'usuarios',
+    'sedes',
+    'tramites_app',
 ]
 
 MIDDLEWARE = [

@@ -101,6 +101,8 @@ body {
   color: #fff;
 }
 
+
+
 /* Logo Santiago del Estero (derecha) */
 .logo-sde {
   font-family: var(--font-display);
@@ -123,6 +125,18 @@ body {
   margin-top: 2px;
 }
 
+.logo-ministerio-mobile {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-top: 1px solid #f0f0f0;
+  text-decoration: none;
+  color: var(--rc-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 /* ═══════════════════════════════════════════════════
   CONTENIDO INTERIOR
    ═══════════════════════════════════════════════════ */
@@ -142,9 +156,10 @@ body {
   display: flex;
   border: 2px solid var(--rc-red);
   border-radius: 6px;
-  overflow: hidden;
   width: 100%;
   max-width: 540px;
+  position: relative;
+  border-radius: 0 4px 4px 0;
 }
 
 .search-box input {
@@ -183,16 +198,15 @@ body {
   background: var(--rc-red);
   min-height: 155px;
   padding: 30px 40px;
-  display: flex;
-  align-items: center;
 }
 
-.carousel-slide-content {
+.carousel-rc .carousel-item .carousel-slide-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   gap: 28px;
+  min-height: 95px;
 }
 
 .carousel-text h3 {
@@ -256,6 +270,138 @@ body {
 .carousel-rc .carousel-indicators .active {
   background-color: #fff;
 }
+
+/* ════════════════════ MODAL TURNO ════════════════════ */
+.turno-step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+}
+.turno-step-indicator .step-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #888;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+  transition: all .2s;
+}
+.turno-step-indicator .step-circle.active {
+  background: var(--rc-red);
+  color: #fff;
+}
+.turno-step-indicator .step-circle.done {
+  background: #28a745;
+  color: #fff;
+}
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  min-width: 40px;
+  margin-bottom: 16px;
+}
+
+/* Opciones de trámite */
+.turno-tramite-option { display: block; cursor: pointer; margin: 0; }
+.turno-tramite-option input[type="radio"] { display: none; }
+.turno-tramite-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: all .2s;
+  background: #fff;
+}
+.turno-tramite-card i {
+  font-size: 22px;
+  color: #aaa;
+  flex-shrink: 0;
+  transition: color .2s;
+}
+.turno-tramite-nombre {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1c1c1c;
+}
+.turno-tramite-desc {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+.turno-tramite-option input:checked + .turno-tramite-card {
+  border-color: var(--rc-red);
+  background: rgba(200,16,46,.04);
+}
+.turno-tramite-option input:checked + .turno-tramite-card i {
+  color: var(--rc-red);
+}
+.turno-tramite-card:hover {
+  border-color: var(--rc-red);
+  box-shadow: 0 2px 8px rgba(200,16,46,.1);
+}
+
+/* Inputs */
+.turno-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 6px;
+}
+.turno-input {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: #1c1c1c;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  background: #fff;
+}
+.turno-input:focus {
+  border-color: var(--rc-red);
+  box-shadow: 0 0 0 3px rgba(200,16,46,.1);
+}
+.turno-input.error { border-color: var(--rc-red); }
+
+/* Error */
+.turno-error {
+  background: rgba(200,16,46,.07);
+  border: 1px solid rgba(200,16,46,.25);
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--rc-red);
+  margin-top: 12px;
+}
+
+/* Botón outline */
+.btn-rc-outline {
+  background: transparent;
+  color: var(--rc-red);
+  border: 1.5px solid var(--rc-red);
+  border-radius: 5px;
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all .2s;
+}
+.btn-rc-outline:hover { background: var(--rc-red); color: #fff; }
+
 
 /* ═══════════════════════════════════════════════════
   SECCIÓN TÍTULOS
@@ -475,7 +621,7 @@ footer a i { margin-right: 6px; }
   text-align: center;
 }
 
-.tramite-card {
+.tramite-card-simple {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -485,7 +631,7 @@ footer a i { margin-right: 6px; }
   padding: 18px 20px;
   transition: box-shadow .2s, transform .2s;
 }
-.tramite-card:hover {
+.tramite-card-simple:hover {
   box-shadow: 0 4px 16px rgba(200,16,46,.12);
   transform: translateY(-2px);
 }
@@ -503,22 +649,158 @@ footer a i { margin-right: 6px; }
   color: #2d3748;
 }
 
+/* ── Cards de trámites en la página de listado ── */
+.tramite-item-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid var(--rc-border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  transition: box-shadow .2s, border-color .2s, transform .2s;
+  height: 100%;
+}
+.tramite-item-card:hover {
+  box-shadow: 0 4px 16px rgba(200,16,46,.10);
+  border-color: var(--rc-red);
+  transform: translateY(-2px);
+}
+.tramite-item-icon {
+  width: 44px; height: 44px;
+  background: rgba(200,16,46,.08);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--rc-red);
+  flex-shrink: 0;
+}
+.tramite-item-body {
+  flex: 1;
+  min-width: 0;
+}
+.tramite-item-nombre {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1c1c1c;
+  margin-bottom: 3px;
+}
+.tramite-item-desc {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.4;
+  white-space: normal;
+  overflow:visible;
+  text-overflow: ellipsis;
+}
+
+/* Botones dentro del carrusel por encima de los controles */
+.carousel-slide-content .carousel-cta,
+.carousel-slide-content .btn-rc {
+  position: relative;
+  z-index: 10;
+}
+
+/* Bajar z-index de los controles prev/next */
+.carousel-control-prev,
+.carousel-control-next {
+  z-index: 5;
+}
+
 /* ═══════════════════════════════════════════════════
   RESPONSIVE
    ═══════════════════════════════════════════════════ */
-@media (max-width: 767px) {
-  .page-content { padding: 16px 16px 32px; }
 
-  .nav-links { display: none; }
-
-  .carousel-rc .carousel-item { padding: 20px 20px; min-height: 120px; }
-  .carousel-text h3 { font-size: 20px; }
-  .carousel-icon-circle { width: 64px; height: 64px; font-size: 28px; }
-
-  footer { padding: 28px 16px 16px; }
+/* ── Desktop grande — expandir el wrapper ── */
+@media (min-width: 1200px) {
+  .page-wrapper { max-width: 1140px; }
 }
 
+@media (min-width: 1400px) {
+  .page-wrapper { max-width: 1320px; }
+}
+
+/* ── Tablet ── */
+@media (max-width: 991px) {
+  .page-wrapper { max-width: 100%; }
+  .page-content { padding: 18px 20px 36px; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 767px) {
+  .page-wrapper { max-width: 100%; box-shadow: none; }
+  .page-content { padding: 14px 14px 28px; }
+
+  /* Navbar */
+  .navbar-rc {
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+  #btn-menu { display: block !important; }
+  .logo-ministerio-wrap { display: none; }
+  .logo-ministerio-mobile { display: flex; }
+
+  /* Menú desplegable */
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 68px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-bottom: 3px solid var(--rc-red);
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    padding: 8px 0;
+    z-index: 999;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a {
+    padding: 12px 24px;
+    border-radius: 0;
+    font-size: 16px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  /* Carrusel */
+  .carousel-rc .carousel-item { padding: 18px 16px; min-height: 110px; }
+  .carousel-text h3 { font-size: 18px; }
+  .carousel-icon-circle { width: 56px; height: 56px; font-size: 24px; }
+  .carousel-slide-content { gap: 12px; }
+
+  /* Cards de trámites en listado */
+  .tramite-item-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+  }
+  .tramite-item-card .btn-rc {
+    align-self: stretch;
+    text-align: center;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  /* Cards de servicios en inicio */
+  .service-card { padding: 20px 10px 16px; }
+  .service-card .svc-icon { font-size: 36px; margin-bottom: 10px; }
+  .service-card .svc-label { font-size: 11px; letter-spacing: 1.5px; }
+
+  /* Footer */
+  footer { padding: 24px 14px 14px; }
+  .footer-bottom { font-size: 10px; }
+}
+
+/* ── Mobile chico ── */
 @media (max-width: 480px) {
-  .logo-sde { font-size: 17px; }
-  .navbar-rc { padding: 0 16px; }
+  .navbar-rc { padding: 0 12px; }
+  .page-content { padding: 12px 12px 24px; }
+  .carousel-text h3 { font-size: 15px; }
+  .carousel-icon-circle { width: 48px; height: 48px; font-size: 20px; }
+}
+
+/* Responsive modal turno */
+@media (max-width: 767px) {
+  .step-line { min-width: 20px; }
+  .turno-step-indicator span { font-size: 10px; }
 }

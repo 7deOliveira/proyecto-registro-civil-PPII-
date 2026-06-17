@@ -7,6 +7,7 @@
     <title>
     {% block titulo %}Registro Civil – Santiago del Estero{% endblock %}
     </title>
+    <link rel="icon" type="image/png" href="{% static 'img/1003424207-removebg-preview.png' %}"/>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -20,6 +21,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="{% static 'css/style-1.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/tramites.css' %}"/>
 
     {% block css_extra %}{% endblock %}
   </head>
@@ -34,14 +36,26 @@
       style="height:52px;width:auto;"/>
 </a>
 
-<nav class="nav-links">
+<button id="btn-menu" aria-label="Menú" style="
+  display:none;
+  background:none; border:none; cursor:pointer;
+  font-size:26px; color:var(--rc-red); padding:4px 8px;
+">
+  <i class="bi bi-list" id="hamburger-icon"></i>
+</button>
+
+<nav class="nav-links" id="nav-links">
   <a href="{% url 'inicio' %}" class="{% block nav_inicio %}{% endblock %}">Inicio</a>
   <a href="{% url 'tramites' %}" class="{% block nav_tramites %}{% endblock %}">Trámites</a>
   <a href="{% url 'sedes' %}" class="{% block nav_sedes %}{% endblock %}">Sedes</a>
+  <a href="https://mjusticia.sde.gob.ar/" target="_blank" rel="noopener"
+    class="logo-ministerio-mobile">
+    <img src="{% static 'img/logo.png' %}" alt="Ministerio de Justicia"
+        style="height:36px;width:auto;"/>
 </nav>
 
 <!-- Logo Ministerio de Justicia — link externo -->
-<a href="https://mjusticia.sde.gob.ar/" target="_blank" rel="noopener" title="Ministerio de Justicia y Derechos Humanos">
+<a href="https://mjusticia.sde.gob.ar/" target="_blank" rel="noopener" class="logo-ministerio-wrap" title="Ministerio de Justicia y Derechos Humanos">
   <img src="{% static 'img/logo.png' %}" 
       alt="Ministerio de Justicia y Derechos Humanos" 
       style="height:45px;width:auto;"/>
@@ -154,7 +168,25 @@
           document.getElementById("modalNoticiaCuerpo").textContent =
             btn.getAttribute("data-cuerpo");
         });
+
+        document.getElementById('btn-menu')?.addEventListener('click', function() {
+    const nav  = document.getElementById('nav-links');
+    const icon = document.getElementById('hamburger-icon');
+    nav.classList.toggle('open');
+    icon.className = nav.classList.contains('open') ? 'bi bi-x-lg' : 'bi bi-list';
+  });
+
+  // Cerrar al hacer clic en un link
+  document.querySelectorAll('#nav-links a').forEach(a => {
+    a.addEventListener('click', () => {
+      document.getElementById('nav-links').classList.remove('open');
+      document.getElementById('hamburger-icon').className = 'bi bi-list';
+    });
+  });
     </script>
+    <script src="{% static 'js/buscador.js' %}"></script>
+    {% include 'turnos.html' %}
+    <script src="{% static 'js/turnos.js' %}"></script>
 
     {% block js_extra %}{% endblock %}
   </body>

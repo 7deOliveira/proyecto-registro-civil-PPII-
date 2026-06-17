@@ -52,32 +52,39 @@
      TOPBAR
 ══════════════════════════════════════════ -->
 
-<div class="adm-topbar">
+<header class="adm-topbar">
   <div class="adm-topbar-left">
-    <button id="adm-menu-toggle" style="background:none;border:none;font-size:22px;color:#555;cursor:pointer;display:none;">
+    <button id="adm-hamburger" style="display:none;" onclick="toggleAdmSidebar()">
       <i class="bi bi-list"></i>
     </button>
-    <div class="adm-logo-circle">RC</div>
-    <div class="adm-brand-text">Registro Civil<span>Panel Admin</span></div>
+    <img src="{% static 'img/1003424207-removebg-preview.png' %}" alt="RC" style="height:36px;"/>
+    <div class="adm-brand-text">
+      REGISTRO CIVIL
+      <span>PANEL ADMIN</span>
+    </div>
   </div>
   <div class="adm-topbar-right">
     <div class="adm-user-badge">
       <div class="adm-user-avatar"><i class="bi bi-person-fill" style="font-size:15px;"></i></div>
       <span id="adm-current-user">
-  {{ usuario.get_full_name|default:usuario.username }}
-  {% if es_superadmin %}<small style="color:var(--adm-red)"> · Super Admin</small>{% endif %}
+        {{ usuario.get_full_name|default:usuario.username }}
+        {% if es_superadmin %}<small style="color:var(--adm-red)"> · Super Admin</small>{% endif %}
       </span>
     </div>
     <form method="POST" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Cerrar sesión</button>
-</form>
+      {% csrf_token %}
+      <button type="submit" class="adm-btn-logout">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Cerrar sesión</span>
+      </button>
+    </form>
   </div>
-</div>
+</header>
 
 <!-- ══════════════════════════════════════════
-     SIDEBAR
+    SIDEBAR
 ══════════════════════════════════════════ -->
+<div class="adm-sidebar-overlay" id="adm-overlay" onclick="toggleAdmSidebar()"></div>
 <aside class="adm-sidebar">
   <div class="adm-sidebar-section">
     <span class="adm-sidebar-label">Menú principal</span>
@@ -102,6 +109,18 @@
       <span class="adm-nav-badge" id="nav-badge-noticias">0</span>
     </button>
   </div>
+
+  <button class="adm-nav-item" data-section="sedes">
+    <i class="bi bi-geo-alt-fill"></i>
+    <span>Gestión de Sedes</span>
+    <span class="adm-nav-badge" id="nav-badge-sedes">0</span>
+  </button>
+
+  <button class="adm-nav-item" data-section="tramites-panel">
+  <i class="bi bi-list-ul"></i>
+  <span>Gestión de Trámites</span>
+  <span class="adm-nav-badge" id="nav-badge-tramites-panel">0</span>
+</button>
 
   <div class="adm-sidebar-section" style="margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,.06);">
     <span class="adm-sidebar-label">Sistema</span>
@@ -293,6 +312,162 @@
     </div>
   </section>
 
+  <!-- ─────────────── SECCIÓN SEDES ─────────────── -->
+<section id="sec-sedes" class="adm-section">
+
+  <div class="adm-page-header">
+    <h2><i class="bi bi-geo-alt-fill"></i> Gestión de Sedes</h2>
+    <button class="btn-adm-primary" id="btn-nueva-sede">
+      <i class="bi bi-plus-circle"></i> Nueva sede
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon blue"><i class="bi bi-geo-alt"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-total-sedes">0</div>
+          <div class="adm-stat-label">Total sedes</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon green"><i class="bi bi-check-circle"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-sedes-activas">0</div>
+          <div class="adm-stat-label">Activas</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-sedes-pendientes">0</div>
+          <div class="adm-stat-label">Pendientes aprobación</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="adm-card">
+    <div class="adm-card-header">
+      <h5><i class="bi bi-table"></i> Listado de sedes</h5>
+      <div class="adm-filters">
+        <input type="text" class="adm-filter-input" id="filtro-sede"
+          placeholder="Buscar por nombre o dirección…" style="min-width:220px;"/>
+        <select class="adm-filter-input" id="filtro-sede-estado" style="min-width:140px;">
+          <option value="">Todos los estados</option>
+          <option value="true">Activas</option>
+          <option value="false">Pendientes</option>
+        </select>
+      </div>
+    </div>
+    <div class="adm-card-body p-0">
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Dirección</th>
+              <th>Departamento</th>
+              <th>Horario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-sedes">
+            <tr><td colspan="6" class="text-center py-4 text-muted">Cargando sedes…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- ─────────────── SECCIÓN TRÁMITES ─────────────── -->
+<section id="sec-tramites-panel" class="adm-section">
+
+  <div class="adm-page-header">
+    <h2><i class="bi bi-list-ul"></i> Gestión de Trámites</h2>
+    <button class="btn-adm-primary" id="btn-nuevo-tramite-panel">
+      <i class="bi bi-plus-circle"></i> Nuevo trámite
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon blue"><i class="bi bi-list-ul"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-total-tramites-panel">0</div>
+          <div class="adm-stat-label">Total trámites</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon green"><i class="bi bi-check-circle"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-tramites-publicados">0</div>
+          <div class="adm-stat-label">Publicados</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+          <div class="adm-stat-value" id="stat-tramites-pendientes">0</div>
+          <div class="adm-stat-label">Pendientes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="adm-card">
+    <div class="adm-card-header">
+      <h5><i class="bi bi-table"></i> Listado de trámites</h5>
+      <div class="adm-filters">
+        <input type="text" class="adm-filter-input" id="filtro-tramite-panel"
+          placeholder="Buscar por nombre…" style="min-width:200px;"/>
+        <select class="adm-filter-input" id="filtro-tramite-estado" style="min-width:150px;">
+          <option value="">Todos los estados</option>
+          <option value="borrador">Borrador</option>
+          <option value="revision">En revisión</option>
+          <option value="publicado">Publicado</option>
+          <option value="archivado">Archivado</option>
+        </select>
+      </div>
+    </div>
+    <div class="adm-card-body p-0">
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Slug</th>
+              <th>Estado</th>
+              <th>Creado por</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-tramites-panel">
+            <tr><td colspan="6" class="text-center py-4 text-muted">Cargando trámites…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
 </main>
 
 <!-- ══════════════════════════════════════════
@@ -470,28 +645,263 @@
   </div>
 </div>
 
+<!-- Modal Sede -->
+<div class="modal fade" id="modal-sede" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header adm-modal-header">
+        <h5 class="modal-title" id="modal-sede-titulo">Nueva Sede</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="form-sede" novalidate>
+          <input type="hidden" name="sede-id"/>
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Nombre de la oficina <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-nombre" class="adm-form-control"
+                  placeholder="Ej: Registro Civil – Casa de Gobierno" required/>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Dirección <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-direccion" class="adm-form-control"
+                  placeholder="Ej: Av. Belgrano (S) 1400" required/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Departamento <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-departamento" class="adm-form-control"
+                  placeholder="Ej: Capital" required/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Provincia</label>
+                <input type="text" name="sede-provincia" class="adm-form-control"
+                  value="Santiago del Estero"/>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Horario <span style="color:var(--adm-red)">*</span></label>
+                <input type="text" name="sede-horario" class="adm-form-control"
+                  placeholder="Ej: Lunes a Viernes 08:00 a 13:00 hs." required/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Latitud<small class="text-muted">(opcional)</small></label>
+                <input type="number" name="sede-lat" class="adm-form-control"
+                  placeholder="Se calcula automáticamente" step="0.000001"/>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Longitud<small class="text-muted">(opcional)</small></label>
+                <input type="number" name="sede-lng" class="adm-form-control"
+                  placeholder="Se calcula automáticamente" step="0.000001"/>
+              </div>
+            </div>
+            {% if es_superadmin %}
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Estado</label>
+                <select name="sede-activo" class="adm-form-control">
+                  <option value="false">Pendiente de aprobación</option>
+                  <option value="true">Activa (aprobada)</option>
+                </select>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="gap:10px;">
+        <button class="btn-adm-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x"></i> Cancelar
+        </button>
+        <button class="btn-adm-primary" id="btn-guardar-sede"
+          onclick="ModSedes.handleFormSave()">
+          <i class="bi bi-check-lg"></i> Guardar sede
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Trámite -->
+<div class="modal fade" id="modal-tramite-panel" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header adm-modal-header">
+        <h5 class="modal-title" id="modal-tramite-panel-titulo">Nuevo Trámite</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="form-tramite-panel" novalidate>
+<input type="hidden" name="tramite-id"/>
+<div class="row g-3">
+
+  <div class="col-12">
+    <div class="adm-form-group">
+      <label>Nombre <span style="color:var(--adm-red)">*</span></label>
+      <input type="text" name="tramite-nombre" class="adm-form-control"
+        placeholder="Ej: Inscripción de Nacimiento" required/>
+    </div>
+  </div>
+
+<div class="col-12">
+  <div class="adm-form-group">
+    <label>Categoría</label>
+    <div class="d-flex gap-2">
+      <select name="tramite-categoria" class="adm-form-control" id="select-categoria-tramite">
+        <option value="">Seleccionar categoría</option>
+      </select>
+      <button type="button" class="btn-adm-secondary" id="btn-nueva-categoria"
+        title="Agregar nueva categoría" style="flex-shrink:0;">
+        <i class="bi bi-plus-lg"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Campo nueva categoría — oculto por defecto -->
+<div class="col-12" id="nueva-categoria-wrap" style="display:none;">
+  <div class="adm-form-group">
+    <label>Nueva categoría</label>
+    <div class="d-flex gap-2">
+      <input type="text" id="nueva-categoria-nombre" class="adm-form-control"
+        placeholder="Ej: Unión Convivencial"/>
+      <select id="nueva-categoria-icono" class="adm-form-control" style="max-width:180px;">
+        <option value="bi-file-earmark">General</option>
+        <option value="bi-person-fill-add">Nacimiento</option>
+        <option value="bi-person-vcard-fill">Identificación</option>
+        <option value="bi-people-fill">Matrimonio</option>
+        <option value="bi-file-earmark-medical-fill">Defunción</option>
+        <option value="bi-house-fill">Domicilio</option>
+        <option value="bi-heart">Familia</option>
+        <option value="bi-briefcase-fill">Legal</option>
+      </select>
+      <button type="button" class="btn-adm-primary" id="btn-confirmar-categoria"
+        style="flex-shrink:0;">
+        <i class="bi bi-check-lg"></i>
+      </button>
+      <button type="button" class="btn-adm-secondary" id="btn-cancelar-categoria"
+        style="flex-shrink:0;">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+  <div class="col-12">
+    <div class="adm-form-group">
+      <label>Identificador de URL <span style="color:var(--adm-red)">*</span></label>
+      <input type="text" name="tramite-slug" class="adm-form-control"
+        placeholder="Ej: inscripcion-nacimiento"/>
+      <small class="text-muted">Se usa internamente para generar el link del trámite. Solo minúsculas, números y guiones. No se puede cambiar después.</small>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="adm-form-group">
+      <label>Descripción</label>
+      <textarea name="tramite-descripcion" class="adm-form-control" rows="3"
+        placeholder="Breve descripción del trámite…"></textarea>
+    </div>
+  </div>
+
+  <!-- Precio -->
+  <div class="col-12">
+    <div class="adm-form-group mb-2">
+      <div class="d-flex align-items-center gap-3">
+        <label class="mb-0">Trámite gratuito</label>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" id="tramite-gratuito" name="tramite-gratuito"
+            onchange="document.getElementById('precio-wrap').style.display = this.checked ? 'none' : 'block'"/>
+        </div>
+      </div>
+    </div>
+    <div id="precio-wrap" class="adm-form-group">
+      <label>Precio ($)</label>
+      <input type="number" name="tramite-precio" class="adm-form-control"
+        placeholder="Ej: 27090" min="0" step="0.01"/>
+    </div>
+  </div>
+
+  {% if es_superadmin %}
+  <div class="col-12">
+    <div class="adm-form-group">
+      <label>Estado</label>
+      <select name="tramite-estado" class="adm-form-control">
+        <option value="borrador">Borrador</option>
+        <option value="revision">En revisión</option>
+        <option value="publicado">Publicado</option>
+        <option value="archivado">Archivado</option>
+      </select>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="adm-form-group">
+      <label>Estado</label>
+      <select name="tramite-estado" class="adm-form-control">
+        <option value="borrador">Borrador</option>
+        <option value="revision">Enviar a revisión</option>
+      </select>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+        </form>
+      </div>
+      <div class="modal-footer" style="gap:10px;">
+        <button class="btn-adm-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x"></i> Cancelar
+        </button>
+        <button class="btn-adm-primary" id="btn-guardar-tramite-panel"
+          onclick="ModTramites.handleFormSave()">
+          <i class="bi bi-check-lg"></i> Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/admin.js' %}"></script>
 <script>
-  // Actualizar badges del sidebar al cargar y al cambiar de sección
-  function updateBadges() {
-  try {
-    const t = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
-    const n = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
-    const pendT = t.filter(x => x.estado === 'Pendiente').length;
-    document.getElementById('nav-badge-turnos')   && (document.getElementById('nav-badge-turnos').textContent   = pendT || t.length);
-    // nav-badge-usuarios lo maneja ModUsuarios.init()
-    document.getElementById('nav-badge-noticias') && (document.getElementById('nav-badge-noticias').textContent = n.length);
-  } catch {}
-}
-  // Actualizar badges cada vez que cambia localStorage
-  window.addEventListener('storage', updateBadges);
-  setTimeout(updateBadges, 500);   // después de que admin.js inicialice los datos
-
-  // Mostrar menú hamburguesa en mobile
-  if (window.innerWidth <= 767) {
-    document.getElementById('adm-menu-toggle').style.display = 'inline-flex';
+  // ── Control del sidebar mobile ──
+  function toggleAdmSidebar() {
+    document.querySelector('.adm-sidebar')?.classList.toggle('open');
+    document.getElementById('adm-overlay')?.classList.toggle('open');
   }
+
+  function cerrarSidebar() {
+    document.querySelector('.adm-sidebar')?.classList.remove('open');
+    document.getElementById('adm-overlay')?.classList.remove('open');
+  }
+
+  // ── Badges en tiempo real desde localStorage ──
+  function updateBadges() {
+    try {
+      const t     = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
+      const n     = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
+      const pendT = t.filter(x => x.estado === 'Pendiente').length;
+      document.getElementById('nav-badge-turnos')   &&
+        (document.getElementById('nav-badge-turnos').textContent   = pendT || t.length);
+      document.getElementById('nav-badge-noticias') &&
+        (document.getElementById('nav-badge-noticias').textContent = n.length);
+    } catch {}
+  }
+
+  window.addEventListener('storage', updateBadges);
+  setTimeout(updateBadges, 500);
 </script>
 </body>
 </html>

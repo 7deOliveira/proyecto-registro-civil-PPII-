@@ -1,7 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from tramites_app.views import lista_tramites as tramites
+from django.template.loader import get_template
+from django.template import TemplateDoesNotExist
+from tramites_app.models import Tramite as TramiteModel
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -66,7 +70,13 @@ def tramites(request):
     return render(request, 'tramites.html')
 
 def tramite_detalle(request, slug):
-    return render(request, f'tramites/{slug}.html')
+    try:
+        get_template(f'tramites/{slug}.html')
+        return render(request, f'tramites/{slug}.html')
+    except TemplateDoesNotExist:
+        # Si no existe, usá el template genérico con datos del modelo
+        tramite = get_object_or_404(TramiteModel, slug=slug, estado='publicado')
+        return render(request, 'tramites/detalle_generico.html', {'tramite': tramite})
 
 def sedes(request):
     return render(request, 'sedes.html')
@@ -79,3 +89,29 @@ def defuncion(request):
 
 def matrimonio(request):
     return render(request, 'matrimonio.html')
+
+from sedes.models import Sede
+
+def sedes(request):
+    sedes_activas = Sede.objects.filter(activo=True).values(
+        'id', 'nombre', 'direccion', 'departamento', 'provincia', 'horario', 'latitud', 'longitud'
+    )
+    import json
+    from decimal import Decimal
+
+    sedes_list = []
+    for s in sedes_activas:
+        sedes_list.append({
+            'id':           s['id'],
+            'nombre':       s['nombre'],
+            'direccion':    s['direccion'],
+            'departamento': s['departamento'],
+            'provincia':    s['provincia'],
+            'horario':      s['horario'],
+            'lat':          float(s['latitud'])  if s['latitud']  else None,
+            'lng':          float(s['longitud']) if s['longitud'] else None,
+        })
+
+    return render(request, 'sedes.html', {
+        'sedes_json': json.dumps(sedes_list)
+    })
