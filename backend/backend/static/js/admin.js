@@ -734,24 +734,43 @@ const ModTramites = {
     filtroEstado?.addEventListener('change', filtrar);
   },
 
-  async openModal(tramite = null) {
+async openModal(tramite = null) {
     const form   = document.getElementById('form-tramite-panel');
     const titulo = document.getElementById('modal-tramite-panel-titulo');
     if (!form) return;
 
-    // Cargar categorías en el select
+    // 1. Obtener las categorías de la API
     const categorias = await this.cargarCategorias();
     const select     = document.getElementById('select-categoria-tramite');
-    select.innerHTML = '<option value="">Seleccionar categoría</option>';
+    
+    // 2. Insertar la opción por defecto y las categorías principales fijas
+    let htmlOptions = `
+      <option value="">Seleccionar categoría</option>
+      <option value="nacimiento">Nacimiento</option>
+      <option value="identificacion">Identificación</option>
+      <option value="matrimonio">Matrimonio</option>
+      <option value="defuncion">Defunción</option>
+    `;
+
+    // 3. Inyectar todo en el select
+    select.innerHTML = htmlOptions;
+
+    // 4. Agregar de forma dinámica las categorías extras que vengan de la base de datos (evitando duplicar)
     categorias.forEach(c => {
-      const opt      = document.createElement('option');
-      opt.value      = c.id;
-      opt.textContent = c.nombre;
-      select.appendChild(opt);
+      // Pasamos a minúsculas y limpiamos acentos para validar si ya existe por defecto
+      const nombreLimpio = c.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const principales = ['nacimiento', 'identificacion', 'matrimonio', 'defuncion'];
+      
+      if (!principales.includes(nombreLimpio)) {
+        const opt       = document.createElement('option');
+        opt.value       = c.id;
+        opt.textContent = c.nombre;
+        select.appendChild(opt);
+      }
     });
 
     if (tramite) {
-      titulo.textContent                              = 'Editar Trámite';
+      titulo.textContent                               = 'Editar Trámite';
       form['tramite-id'].value                        = tramite.id;
       form['tramite-nombre'].value                    = tramite.nombre;
       form['tramite-slug'].value                      = tramite.slug;
@@ -785,7 +804,15 @@ async handleFormSave() {
     const slug        = form['tramite-slug'].value.trim();
     const descripcion = form['tramite-descripcion'].value.trim();
     const estado      = form['tramite-estado'].value;
-    const categoriaId = document.getElementById('select-categoria-tramite').value;
+
+    let categoriaId = document.getElementById('select-categoria-tramite').value;
+    
+    // --- ESTA LÍNEA CORRIGE EL ERROR ---
+    // Si el valor NO es un número (es decir, es 'nacimiento', 'matrimonio', etc.), enviamos null para que el backend no falle
+    if (isNaN(categoriaId)) {
+        categoriaId = null;
+    }
+
     const gratuito    = document.getElementById('tramite-gratuito').checked;
     const precio      = gratuito ? null : (form['tramite-precio'].value || null);
 
@@ -887,6 +914,8 @@ if (btnConfirmarCat) btnConfirmarCat.onclick = async () => {
     const data = await r.json();
 
     if (data.error) { Toast.show(data.error, 'error'); return; }
+
+    const select = document.getElementById('select-categoria-tramite');
 
     // Agregar la nueva categoría al select y seleccionarla
     const opt       = document.createElement('option');

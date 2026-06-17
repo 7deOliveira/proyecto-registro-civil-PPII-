@@ -184,6 +184,17 @@ body {
 
 .search-box button:hover { background: var(--rc-red-dark); }
 
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Controla el espacio entre el logo y el texto */
+}
+
+.navbar-brand img {
+    object-fit: contain; /* Evita que el logo se deforme */
+}
+
+
 /* ═══════════════════════════════════════════════════
   CARRUSEL
    ═══════════════════════════════════════════════════ */
