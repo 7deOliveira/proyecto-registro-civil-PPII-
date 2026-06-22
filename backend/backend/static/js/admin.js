@@ -138,9 +138,11 @@ function initNav() {
     item.addEventListener('click', () => {
       const target = item.dataset.section;
 
+      // Activar ítem del sidebar
       document.querySelectorAll('.adm-nav-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
 
+      // Mostrar sección correspondiente
       document.querySelectorAll('.adm-section').forEach(s => s.classList.remove('active'));
       const sec = document.getElementById(`sec-${target}`);
       if (sec) sec.classList.add('active');
@@ -150,13 +152,11 @@ function initNav() {
       if (target === 'sedes')          ModSedes.init();
       if (target === 'usuarios')       ModUsuarios.init();
 
-      document.querySelector('.adm-sidebar')?.classList.remove('open');
+      // Cerrar sidebar y overlay en mobile — delegado a cerrarSidebar()
+      if (typeof cerrarSidebar === 'function') cerrarSidebar();
     });
   });
-
-  document.getElementById('adm-menu-toggle')?.addEventListener('click', () => {
-    document.querySelector('.adm-sidebar')?.classList.toggle('open');
-  });
+  // El toggle del hamburguesa lo maneja toggleAdmSidebar() desde el HTML
 }
 
 /* ════════════════════════════════════════════════

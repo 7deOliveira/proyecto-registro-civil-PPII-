@@ -30,10 +30,19 @@
       <!-- NAVBAR -->
       <header class="navbar-rc">
         <!-- Logo RC — sin link oculto al login -->
-<a href="{% url 'inicio' %}" title="Registro Civil">
+<a href="{% url 'inicio' %}" title="Registro Civil" 
+   style="display:flex;align-items:center;gap:10px;text-decoration:none;">
   <img src="{% static 'img/1003424207-removebg-preview.png' %}" 
-      alt="Registro Civil" 
-      style="height:52px;width:auto;"/>
+       alt="Registro Civil" style="height:52px;width:auto;"/>
+  <div class="navbar-brand-text" style="line-height:1.1;">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;
+                font-weight:800;color:var(--rc-red);letter-spacing:1.5px;
+                text-transform:uppercase;">Registro Civil</div>
+    <div style="font-size:10px;color:#888;font-weight:600;
+                letter-spacing:2px;text-transform:uppercase;">
+      Santiago del Estero
+    </div>
+  </div>
 </a>
 
 <button id="btn-menu" aria-label="Menú" style="
@@ -63,7 +72,16 @@
       </header>
 
       <!-- CONTENIDO -->
-      <main class="page-content">{% block contenido %}{% endblock %}</main>
+      <main class="page-content">
+  {% if request.path != '/' %}
+  <div class="volver-wrap">
+    <a href="javascript:history.back()" class="btn-volver">
+      <i class="bi bi-arrow-left-circle-fill"></i> Volver
+    </a>
+  </div>
+  {% endif %}
+  {% block contenido %}{% endblock %}
+</main>
 
       <!-- FOOTER -->
       <footer>

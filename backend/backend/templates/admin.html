@@ -876,35 +876,32 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/admin.js' %}"></script>
 <script>
+  // ── Control del sidebar mobile ──
   function toggleAdmSidebar() {
-  document.querySelector('.adm-sidebar').classList.toggle('open');
-  document.getElementById('adm-overlay').classList.toggle('open');
-}
-
-  function updateBadges() {
-    try {
-      const t = JSON.parse(localStorage.getItem('rc_turnos') || '[]');
-      const n = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
-      const pendT = t.filter(x => x.estado === 'Pendiente').length;
-      document.getElementById('nav-badge-turnos')   && (document.getElementById('nav-badge-turnos').textContent   = pendT || t.length);
-      document.getElementById('nav-badge-noticias') && (document.getElementById('nav-badge-noticias').textContent = n.length);
-    } catch {}
-  }
-  window.addEventListener('storage', updateBadges);
-  setTimeout(updateBadges, 500);
-
-  if (window.innerWidth <= 767) {
-    const toggle = document.getElementById('adm-menu-toggle');
-    if (toggle) toggle.style.display = 'inline-flex';
+    document.querySelector('.adm-sidebar')?.classList.toggle('open');
+    document.getElementById('adm-overlay')?.classList.toggle('open');
   }
 
-  // Cerrar sidebar al hacer clic en cualquier ítem del menú
-document.querySelectorAll('.adm-nav-item[data-section]').forEach(btn => {
-  btn.addEventListener('click', () => {
+  function cerrarSidebar() {
     document.querySelector('.adm-sidebar')?.classList.remove('open');
     document.getElementById('adm-overlay')?.classList.remove('open');
-  });
-});
+  }
+
+  // ── Badges en tiempo real desde localStorage ──
+  function updateBadges() {
+    try {
+      const t     = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
+      const n     = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
+      const pendT = t.filter(x => x.estado === 'Pendiente').length;
+      document.getElementById('nav-badge-turnos')   &&
+        (document.getElementById('nav-badge-turnos').textContent   = pendT || t.length);
+      document.getElementById('nav-badge-noticias') &&
+        (document.getElementById('nav-badge-noticias').textContent = n.length);
+    } catch {}
+  }
+
+  window.addEventListener('storage', updateBadges);
+  setTimeout(updateBadges, 500);
 </script>
 </body>
 </html>

@@ -29,40 +29,46 @@
     <button type="button" data-bs-target="#carouselRC" data-bs-slide-to="1" aria-label="Diapositiva 2"></button>
     <button type="button" data-bs-target="#carouselRC" data-bs-slide-to="2" aria-label="Diapositiva 3"></button>
   </div>
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-      <div class="carousel-slide-content">
-        <div class="carousel-text">
-          <h3>Abierto: Lunes a Viernes</h3>
-          <p>Horario de atención: <strong>09:00 a 13:00 hs.</strong></p>
-          <p style="font-size:12px;margin-top:4px;opacity:.8">Registro Civil de la Provincia de Santiago del Estero</p>
-        </div>
-        <div class="carousel-icon-circle"><i class="bi bi-clock-fill"></i></div>
+
+<div class="carousel-inner">
+  <div class="carousel-item active">
+    <div class="carousel-slide-content" style="
+      background: linear-gradient(135deg, rgba(200,16,46,.20) 0%, rgba(160,13,36,.50) 100%),
+      url('https://i.pinimg.com/1200x/a2/ea/06/a2ea06ce7c72f9c99532db94086bdb55.jpg') center/cover no-repeat;">
+      <div class="carousel-text">
+        <h3>Abierto: Lunes a Viernes</h3>
+        <p>Horario de atención: <strong>09:00 a 13:00 hs.</strong></p>
+        <p style="font-size:12px;margin-top:4px;opacity:.8">Registro Civil de la Provincia de Santiago del Estero</p>
       </div>
-    </div>
-    <div class="carousel-item slide-2">
-      <div class="carousel-slide-content">
-        <div class="carousel-text">
-          <h3>Trámites en línea disponibles</h3>
-          <p>Iniciá tu trámite desde casa, sin necesidad de concurrir a la sede.</p>
-          <a href="{% url 'tramites' %}" class="carousel-cta">Ver trámites</a>
-        </div>
-        <div class="carousel-icon-circle"><i class="bi bi-laptop-fill"></i></div>
-      </div>
-    </div>
-    <div class="carousel-item slide-3">
-      <div class="carousel-slide-content">
-        <div class="carousel-text">
-          <h3>Turno previo obligatorio</h3>
-          <p>Para atención presencial solicitá tu turno con anticipación.</p>
-          <button data-bs-toggle="modal" data-bs-target="#modalTurno" class="btn-rc">
-        Solicitar turno
-        </button>
-        </div>
-        <div class="carousel-icon-circle"><i class="bi bi-calendar-check-fill"></i></div>
-      </div>
+      <div class="carousel-icon-circle"><i class="bi bi-clock-fill"></i></div>
     </div>
   </div>
+  <div class="carousel-item">
+    <div class="carousel-slide-content" style="
+      background: linear-gradient(135deg, rgba(200,16,46,.20) 0%, rgba(160,13,36,.50) 100%),
+      url('https://i.pinimg.com/736x/a7/bb/5c/a7bb5cc6c1b28c89f33ba1a646bad549.jpg') center/cover no-repeat;">
+      <div class="carousel-text">
+        <h3>Trámites en línea disponibles</h3>
+        <p>Iniciá tu trámite desde casa, sin necesidad de concurrir a la sede.</p>
+        <a href="{% url 'tramites' %}" class="carousel-cta">Ver trámites</a>
+      </div>
+      <div class="carousel-icon-circle"><i class="bi bi-laptop-fill"></i></div>
+    </div>
+  </div>
+  <div class="carousel-item">
+    <div class="carousel-slide-content" style="
+      background: linear-gradient(135deg, rgba(200,16,46,.20) 0%, rgba(160,13,36,.50) 100%),
+      url('https://i.pinimg.com/736x/ee/c8/a3/eec8a3c990051dbd83922240692c469e.jpg') center/cover no-repeat;">
+      <div class="carousel-text">
+        <h3>Turno previo obligatorio</h3>
+        <p>Para atención presencial solicitá tu turno con anticipación.</p>
+        <a href="#" class="carousel-cta" data-bs-toggle="modal" data-bs-target="#modalTurno">Solicitar turno</a>
+      </div>
+      <div class="carousel-icon-circle"><i class="bi bi-calendar-check-fill"></i></div>
+    </div>
+  </div>
+</div>
+
   <button class="carousel-control-prev" type="button" data-bs-target="#carouselRC" data-bs-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="visually-hidden">Anterior</span>

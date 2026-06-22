@@ -197,7 +197,7 @@ body {
 .carousel-rc .carousel-item {
   background: var(--rc-red);
   min-height: 155px;
-  padding: 30px 40px;
+  padding: 0px;
 }
 
 .carousel-rc .carousel-item .carousel-slide-content {
@@ -207,6 +207,9 @@ body {
   width: 100%;
   gap: 28px;
   min-height: 95px;
+  padding: 30px 40px;
+  background-size: cover !important;
+  background-position: center !important;
 }
 
 .carousel-text h3 {
@@ -706,6 +709,72 @@ footer a i { margin-right: 6px; }
   z-index: 5;
 }
 
+/* ── Accesibilidad — texto legible para adultos mayores ── */
+.tramite-item-nombre {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tramite-item-desc {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.news-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.sede-nombre {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.sede-dato {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.service-card .svc-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+/* ── Botón Volver ── */
+.volver-wrap {
+  padding: 12px 0 0;
+  margin-bottom: 4px;
+  overflow: visible;
+}
+
+.btn-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: none;
+  color: var(--rc-red);
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-decoration: none;
+  padding: 12px 16px;
+  transition: gap .2s, opacity .2s;
+}
+
+.btn-volver:hover {
+  opacity: .75;
+  gap: 10px;
+  color: var(--rc-red);
+}
+
+.btn-volver i {
+  font-size: 22px;
+}
+
 /* ═══════════════════════════════════════════════════
   RESPONSIVE
    ═══════════════════════════════════════════════════ */
@@ -803,4 +872,15 @@ footer a i { margin-right: 6px; }
 @media (max-width: 767px) {
   .step-line { min-width: 20px; }
   .turno-step-indicator span { font-size: 10px; }
+}
+
+@media (max-width: 767px) {
+  .navbar-brand-text { display: none; }
+}
+
+@media (max-width: 767px) {
+  .carousel-rc .carousel-item .carousel-slide-content {
+    min-height: 120px;
+    padding: 18px 16px;
+  }
 }
