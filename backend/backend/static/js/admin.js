@@ -1153,13 +1153,125 @@ tbody.querySelectorAll('.btn-editar-sede').forEach(btn => {
 };
 
 /* ════════════════════════════════════════════════
-  12. INIT GENERAL ADMIN
+  12. MÓDULO ESTADÍSTICAS
+   ════════════════════════════════════════════════ */
+const ModEstadisticas = {
+
+  async cargar() {
+    const r    = await fetch('/api/turnos/estadisticas/');
+    const data = await r.json();
+    return data;
+  },
+
+  barras(containerId, items, colorFn) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const max = Math.max(...items.map(i => i.valor), 1);
+
+    container.innerHTML = items.map(item => `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+          <span style="font-weight:600;color:#2d3748;">${item.label}</span>
+          <span style="font-weight:700;color:#2d3748;">${item.valor}</span>
+        </div>
+        <div style="background:#f0f2f5;border-radius:20px;height:10px;overflow:hidden;">
+          <div style="
+            width:${Math.round(item.valor / max * 100)}%;
+            height:100%;
+            background:${colorFn(item)};
+            border-radius:20px;
+            transition:width .6s ease;
+          "></div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  render(data) {
+    // Cards resumen
+    document.getElementById('est-hoy-total').textContent     = data.hoy_total;
+    document.getElementById('est-hoy-pendientes').textContent = data.hoy_pendientes;
+    document.getElementById('est-tasa').textContent           = `${data.tasa_asistencia}%`;
+    document.getElementById('est-total').textContent          = data.total;
+
+    // Por estado
+    this.barras('est-por-estado', [
+      { label: 'Pendientes',   valor: data.pendientes,    color: '#b8860b' },
+      { label: 'Asistieron',   valor: data.asistieron,    color: '#1e7e34' },
+      { label: 'No asistieron',valor: data.no_asistieron, color: '#c8102e' },
+      { label: 'Cancelados',   valor: data.cancelados,    color: '#6c757d' },
+    ], item => item.color);
+
+    // Por origen
+    const totalOrigen = (data.sistema + data.manual) || 1;
+    this.barras('est-por-origen', [
+      { label: `Sistema (ciudadanos) — ${Math.round(data.sistema/totalOrigen*100)}%`,
+        valor: data.sistema, color: '#0066cc' },
+      { label: `Manual (empleados) — ${Math.round(data.manual/totalOrigen*100)}%`,
+        valor: data.manual,  color: '#c8102e' },
+    ], item => item.color);
+
+    // Por trámite
+    const tramiteLabels = {
+      'dni-5-8':       'DNI 5-8 años',
+      'dni-14':        'DNI 14 años',
+      'dni-domicilio': 'Cambio domicilio',
+      'dni-nuevo':     'Nuevo ejemplar',
+      'pasaporte':     'Pasaporte',
+    };
+    this.barras('est-por-tramite',
+      data.por_tramite.map(t => ({
+        label: tramiteLabels[t.tramite] || t.tramite,
+        valor: t.total
+      })),
+      () => '#c8102e'
+    );
+
+    // Últimos 7 días
+    const contenedor7 = document.getElementById('est-ultimos-7');
+    if (contenedor7) {
+      if (data.ultimos_7.length === 0) {
+        contenedor7.innerHTML = '<p style="color:#888;font-size:13px;text-align:center;padding:20px 0;">Sin datos en los últimos 7 días.</p>';
+      } else {
+        const max7 = Math.max(...data.ultimos_7.map(d => d.total), 1);
+        contenedor7.innerHTML = data.ultimos_7.map(d => {
+          const [y, m, dia] = d.dia.split('-');
+          const fecha = `${dia}/${m}`;
+          const pct   = Math.round(d.total / max7 * 100);
+          return `
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
+                <span style="font-weight:600;color:#2d3748;">${fecha}</span>
+                <span style="font-weight:700;color:#2d3748;">${d.total}</span>
+              </div>
+              <div style="background:#f0f2f5;border-radius:20px;height:8px;overflow:hidden;">
+                <div style="width:${pct}%;height:100%;background:#c8102e;border-radius:20px;transition:width .6s ease;"></div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+    }
+  },
+
+  async init() {
+    try {
+      const data = await this.cargar();
+      this.render(data);
+    } catch (e) {
+      console.error('[ModEstadisticas]', e);
+    }
+  }
+};
+
+/* ════════════════════════════════════════════════
+  13. INIT GENERAL ADMIN
    ════════════════════════════════════════════════ */
 
 function initAdmin() {
   if (!document.querySelector('.admin-body')) return;
   if (document.getElementById('sec-sedes')) ModSedes.init();
   if (document.getElementById('sec-tramites-panel')) ModTramites.init();
+  if (document.getElementById('sec-estadisticas')) ModEstadisticas.init();
 
   // Guard de autenticación
   /* Auth.guard(); */
@@ -1191,7 +1303,7 @@ if (userDisplay) {
 }
 
 /* ════════════════════════════════════════════════
-  12. BOOTSTRAP
+  14. BOOTSTRAP
    ════════════════════════════════════════════════ */
 
    // Limpiar backdrop de modales al cerrar

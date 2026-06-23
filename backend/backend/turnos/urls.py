@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/turnos/crear/',                  views.crear_turno,     name='api_crear_turno'),
     path('api/turnos/<int:turno_id>/estado/',  views.cambiar_estado,  name='api_cambiar_estado'),
     path('api/turnos/disponibilidad/',         views.disponibilidad,  name='api_disponibilidad'),
+    path('api/turnos/estadisticas/', views.estadisticas, name='api_estadisticas_turnos'),
 ]

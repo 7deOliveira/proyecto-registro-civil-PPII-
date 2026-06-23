@@ -95,6 +95,11 @@
       <span class="adm-nav-badge" id="nav-badge-turnos">0</span>
     </button>
 
+    <button class="adm-nav-item" data-section="estadisticas">
+      <i class="bi bi-bar-chart-fill"></i>
+      <span>Estadísticas de turnos</span>
+    </button>
+
 {% if es_superadmin %}
 <button class="adm-nav-item" data-section="usuarios">
   <i class="bi bi-people-fill"></i>
@@ -230,6 +235,109 @@
       </div>
     </div>
   </section>
+
+  <!-- ─────────────── SECCIÓN ESTADÍSTICAS ─────────────── -->
+<section id="sec-estadisticas" class="adm-section">
+
+  <div class="adm-page-header">
+    <h2><i class="bi bi-bar-chart-fill"></i> Estadísticas de Turnos</h2>
+    <button class="btn-adm-secondary" onclick="ModEstadisticas.init()">
+      <i class="bi bi-arrow-clockwise"></i> Actualizar
+    </button>
+  </div>
+
+  <!-- Cards resumen -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon blue"><i class="bi bi-calendar-check"></i></div>
+        <div>
+          <div class="adm-stat-value" id="est-hoy-total">—</div>
+          <div class="adm-stat-label">Turnos hoy</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+          <div class="adm-stat-value" id="est-hoy-pendientes">—</div>
+          <div class="adm-stat-label">Pendientes hoy</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon green"><i class="bi bi-check-circle"></i></div>
+        <div>
+          <div class="adm-stat-value" id="est-tasa">—</div>
+          <div class="adm-stat-label">Tasa asistencia</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="adm-stat-card">
+        <div class="adm-stat-icon red"><i class="bi bi-people-fill"></i></div>
+        <div>
+          <div class="adm-stat-value" id="est-total">—</div>
+          <div class="adm-stat-label">Total histórico</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+
+    <!-- Distribución por estado -->
+    <div class="col-12 col-md-6">
+      <div class="adm-card h-100">
+        <div class="adm-card-header">
+          <h5><i class="bi bi-pie-chart-fill"></i> Por estado</h5>
+        </div>
+        <div class="adm-card-body">
+          <div id="est-por-estado"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Origen de turnos -->
+    <div class="col-12 col-md-6">
+      <div class="adm-card h-100">
+        <div class="adm-card-header">
+          <h5><i class="bi bi-globe"></i> Por origen</h5>
+        </div>
+        <div class="adm-card-body">
+          <div id="est-por-origen"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Por trámite -->
+    <div class="col-12 col-md-6">
+      <div class="adm-card h-100">
+        <div class="adm-card-header">
+          <h5><i class="bi bi-list-ol"></i> Por trámite</h5>
+        </div>
+        <div class="adm-card-body">
+          <div id="est-por-tramite"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Últimos 7 días -->
+    <div class="col-12 col-md-6">
+      <div class="adm-card h-100">
+        <div class="adm-card-header">
+          <h5><i class="bi bi-graph-up"></i> Últimos 7 días</h5>
+        </div>
+        <div class="adm-card-body">
+          <div id="est-ultimos-7"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
 
   <!-- ─────────────── SECCIÓN USUARIOS ─────────────── -->
 {% if es_superadmin %}

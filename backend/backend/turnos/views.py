@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from .models import Turno
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 
 # ── Configuración ──
 MAX_POR_HORARIO = 2
@@ -195,3 +197,65 @@ def cambiar_estado(request, turno_id):
         return JsonResponse({'error': 'Turno no encontrado.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@login_required
+def estadisticas(request):
+    from datetime import date, timedelta
+
+    hoy     = date.today()
+    hace_7  = hoy - timedelta(days=6)
+    hace_30 = hoy - timedelta(days=29)
+
+    # ── Totales generales ──
+    total        = Turno.objects.count()
+    pendientes   = Turno.objects.filter(estado='pendiente').count()
+    asistieron   = Turno.objects.filter(estado='asistio').count()
+    no_asistieron = Turno.objects.filter(estado='no_asistio').count()
+    cancelados   = Turno.objects.filter(estado='cancelado').count()
+
+    # ── Por origen ──
+    sistema = Turno.objects.filter(origen='sistema').count()
+    manual  = Turno.objects.filter(origen='manual').count()
+
+    # ── Por trámite ──
+    por_tramite = list(
+        Turno.objects.values('tramite')
+        .annotate(total=Count('id'))
+        .order_by('-total')
+    )
+
+    # ── Turnos últimos 7 días ──
+    ultimos_7 = list(
+        Turno.objects.filter(fecha__gte=hace_7)
+        .annotate(dia=TruncDate('fecha'))
+        .values('dia')
+        .annotate(total=Count('id'))
+        .order_by('dia')
+    )
+    ultimos_7_fmt = [
+        {'dia': str(x['dia']), 'total': x['total']}
+        for x in ultimos_7
+    ]
+
+    # ── Tasa de asistencia ──
+    atendidos = asistieron + no_asistieron
+    tasa_asistencia = round((asistieron / atendidos * 100), 1) if atendidos > 0 else 0
+
+    # ── Turno de hoy ──
+    hoy_total     = Turno.objects.filter(fecha=hoy).count()
+    hoy_pendientes = Turno.objects.filter(fecha=hoy, estado='pendiente').count()
+
+    return JsonResponse({
+        'total':           total,
+        'pendientes':      pendientes,
+        'asistieron':      asistieron,
+        'no_asistieron':   no_asistieron,
+        'cancelados':      cancelados,
+        'sistema':         sistema,
+        'manual':          manual,
+        'por_tramite':     por_tramite,
+        'ultimos_7':       ultimos_7_fmt,
+        'tasa_asistencia': tasa_asistencia,
+        'hoy_total':       hoy_total,
+        'hoy_pendientes':  hoy_pendientes,
+    })
