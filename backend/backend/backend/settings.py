@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'usuarios',
     'sedes',
     'tramites_app',
+    'turnos'
 ]
 
 MIDDLEWARE = [

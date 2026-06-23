@@ -30,37 +30,48 @@ const ModTurnos = {
     });
   },
 
-  // ── Generar horarios disponibles ──
-  generarHorarios() {
-    const fecha     = document.getElementById('turno-fecha').value;
-    const select    = document.getElementById('turno-horario');
-    const resumen   = document.getElementById('turno-resumen');
-    if (!fecha) return;
+  // ── Generar horarios consultando disponibilidad real en Django ──
+async generarHorarios() {
+  const fecha  = document.getElementById('turno-fecha').value;
+  const select = document.getElementById('turno-horario');
+  const resumen = document.getElementById('turno-resumen');
+  if (!fecha) return;
 
-    const dia = new Date(fecha + 'T00:00:00').getDay(); // 0=Dom, 6=Sáb
+  select.innerHTML = '<option value="">Cargando horarios...</option>';
+  if (resumen) resumen.style.display = 'none';
+
+  try {
+    const r    = await fetch(`/api/turnos/disponibilidad/?fecha=${fecha}`);
+    const data = await r.json();
+
     select.innerHTML = '<option value="">Seleccioná un horario</option>';
-    resumen.style.display = 'none';
 
-    if (dia === 0 || dia === 6) {
-      select.innerHTML = '<option value="">No hay turnos los fines de semana</option>';
+    if (!data.habil) {
+      select.innerHTML = '<option value="">No hay turnos este día (feriado o fin de semana)</option>';
       return;
     }
 
-    // Generar horarios 09:00 a 12:45 cada 15 min
-    for (let h = 9; h < 13; h++) {
-      for (let m = 0; m < 60; m += 15) {
-        const hStr = String(h).padStart(2, '0');
-        const mStr = String(m).padStart(2, '0');
-        const opt  = document.createElement('option');
-        opt.value  = `${hStr}:${mStr}`;
-        opt.textContent = `${hStr}:${mStr} hs.`;
-        select.appendChild(opt);
-      }
+    if (!data.habil_dia) {
+      select.innerHTML = '<option value="">No hay más turnos disponibles para este día</option>';
+      return;
     }
 
-    select.addEventListener('change', () => this.actualizarResumen());
-  },
+    data.slots.forEach(slot => {
+      const opt = document.createElement('option');
+      opt.value = slot.hora;
+      opt.textContent = slot.lleno
+        ? `${slot.hora} hs. — Sin disponibilidad`
+        : `${slot.hora} hs.`;
+      opt.disabled = slot.lleno;
+      select.appendChild(opt);
+    });
 
+    select.addEventListener('change', () => this.actualizarResumen());
+
+  } catch (e) {
+    select.innerHTML = '<option value="">Error al cargar horarios. Reintentá.</option>';
+  }
+},
   // ── Actualizar resumen ──
   actualizarResumen() {
     const fecha   = document.getElementById('turno-fecha').value;
@@ -188,38 +199,72 @@ const ModTurnos = {
       : 'Siguiente <i class="bi bi-arrow-right ms-1"></i>';
   },
 
-  // ── Confirmar turno ──
-  confirmar() {
-    const tramite = document.querySelector('input[name="turno-tramite"]:checked')?.value;
-    const email   = document.getElementById('turno-email').value;
-    const fecha   = document.getElementById('turno-fecha').value;
-    const horario = document.getElementById('turno-horario').value;
+// ── Confirmar turno — envía a Django ──
+async confirmar() {
+  const tramite   = document.querySelector('input[name="turno-tramite"]:checked')?.value;
+  const nombre    = document.getElementById('turno-nombre').value;
+  const dni       = document.getElementById('turno-dni').value;
+  const email     = document.getElementById('turno-email').value;
+  const telefono  = document.getElementById('turno-telefono').value;
+  const direccion = document.getElementById('turno-direccion').value;
+  const fecha     = document.getElementById('turno-fecha').value;
+  const horario   = document.getElementById('turno-horario').value;
 
-    const [y, m, d]   = fecha.split('-');
+  const btnConfirmar = document.getElementById('btn-turno-siguiente');
+  btnConfirmar.disabled = true;
+  btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Enviando...';
+
+  try {
+    const r    = await fetch('/api/turnos/crear/', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        tramite, nombre, dni, email, telefono, direccion,
+        fecha, hora: horario, origen: 'sistema'
+      }),
+    });
+    const data = await r.json();
+
+    if (data.error) {
+      document.getElementById('error-fecha').style.display = 'flex';
+      document.getElementById('error-fecha').innerHTML =
+        `<i class="bi bi-exclamation-circle-fill me-1"></i>${data.error}`;
+      btnConfirmar.disabled = false;
+      btnConfirmar.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Confirmar turno';
+      return;
+    }
+
+    // Mostrar confirmación
+    const [y, m, d]    = fecha.split('-');
     const fechaFormato = `${d}/${m}/${y}`;
     const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     const diaNombre = dias[new Date(fecha + 'T00:00:00').getDay()];
 
-    // Mostrar confirmación
     document.getElementById('conf-email').textContent     = email;
     document.getElementById('conf-tramite').textContent   = this.tramiteLabels[tramite] || tramite;
-    document.getElementById('conf-fecha-hora').textContent = `${diaNombre} ${fechaFormato} – ${horario} hs.`;
+    document.getElementById('conf-fecha-hora').textContent =
+      `${diaNombre} ${fechaFormato} – ${horario} hs. · Nº ${data.numero_turno}`;
 
-    // Ocultar pasos y footer
     for (let i = 1; i <= 3; i++) {
       const p = document.getElementById(`turno-paso-${i}`);
       if (p) p.style.display = 'none';
     }
     document.getElementById('turno-paso-4').style.display = 'block';
     document.getElementById('turno-footer').style.display = 'none';
-    document.querySelector('.modal-header .btn-close').style.display = 'block';
 
-    // Marcar todos los indicadores como done
     for (let i = 1; i <= 3; i++) {
       const circle = document.querySelector(`#step-ind-${i} .step-circle`);
       if (circle) circle.className = 'step-circle done';
     }
-  },
+
+  } catch (e) {
+    document.getElementById('error-fecha').style.display = 'flex';
+    document.getElementById('error-fecha').innerHTML =
+      '<i class="bi bi-exclamation-circle-fill me-1"></i> Error de conexión. Reintentá.';
+    btnConfirmar.disabled = false;
+    btnConfirmar.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Confirmar turno';
+  }
+},
 
   // ── Resetear modal ──
   resetear() {

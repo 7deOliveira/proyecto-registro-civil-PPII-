@@ -160,169 +160,144 @@ function initNav() {
 }
 
 /* ════════════════════════════════════════════════
-   7. MÓDULO TURNOS
+  7. MÓDULO TURNOS
    ════════════════════════════════════════════════ */
-
 const ModTurnos = {
-  ESTADOS: ['Pendiente', 'Asistió', 'No asistió', 'Cancelado'],
-  TRAMITES: ['Nacimiento', 'Identificación', 'Matrimonio', 'Defunción'],
 
-  load()   { return Store.get(STORAGE_KEYS.TURNOS) || []; },
-  save(arr) { Store.set(STORAGE_KEYS.TURNOS, arr); },
-
-  badgeClass(estado) {
-    return { Pendiente: 'badge-pendiente', Asistió: 'badge-asistio', 'No asistió': 'badge-noasistio', Cancelado: 'badge-cancelado' }[estado] || 'badge-pendiente';
+  async cargar() {
+    const r    = await fetch('/api/turnos/');
+    const data = await r.json();
+    return data.turnos || [];
   },
 
-  render(filtro = '') {
-    const turnos = this.load();
-    const tbody  = document.getElementById('turnos-tbody');
-    const stats  = { total: turnos.length, pendiente: 0, asistio: 0, cancelado: 0 };
+  estadoBadge(estado) {
+    const map = {
+      'pendiente':  'badge-pendiente',
+      'asistio':    'badge-asistio',
+      'no_asistio': 'badge-noasistio',
+      'cancelado':  'badge-cancelado',
+    };
+    const labels = {
+      'pendiente':  'Pendiente',
+      'asistio':    'Asistió',
+      'no_asistio': 'No asistió',
+      'cancelado':  'Cancelado',
+    };
+    return `<span class="badge-estado ${map[estado] || ''}">${labels[estado] || estado}</span>`;
+  },
 
-    turnos.forEach(t => {
-      if (t.estado === 'Pendiente')   stats.pendiente++;
-      if (t.estado === 'Asistió')     stats.asistio++;
-      if (t.estado === 'Cancelado' || t.estado === 'No asistió') stats.cancelado++;
-    });
+  origenBadge(origen) {
+    if (origen === 'manual') {
+      return `<span class="badge-estado badge-admin" title="Cargado por empleado">
+                <i class="bi bi-person-fill me-1"></i>Manual
+              </span>`;
+    }
+    return `<span class="badge-estado badge-operador" title="Solicitado por el ciudadano">
+              <i class="bi bi-globe me-1"></i>Sistema
+            </span>`;
+  },
 
-    // Actualizar stat cards
-    document.getElementById('stat-total-turnos')?.innerText && (document.getElementById('stat-total-turnos').innerText = stats.total);
-    document.getElementById('stat-pendientes')  ?. innerText !== undefined && (document.getElementById('stat-pendientes').innerText = stats.pendiente);
-    document.getElementById('stat-asistio')     ?. innerText !== undefined && (document.getElementById('stat-asistio').innerText    = stats.asistio);
-    document.getElementById('stat-cancelado')   ?. innerText !== undefined && (document.getElementById('stat-cancelado').innerText  = stats.cancelado);
-
-    // Filtrar
-    const q = filtro.toLowerCase();
-    const visible = q ? turnos.filter(t =>
-      t.nombre.toLowerCase().includes(q) ||
-      t.dni.includes(q) ||
-      t.tramite.toLowerCase().includes(q) ||
-      t.numero.toLowerCase().includes(q) ||
-      t.estado.toLowerCase().includes(q)
-    ) : turnos;
-
+  render(turnos) {
+    const tbody = document.getElementById('turnos-tbody');
     if (!tbody) return;
-    if (visible.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No se encontraron turnos.</td></tr>`;
+
+    // Stats
+    const statTotal    = document.getElementById('stat-total-turnos');
+    const statPend     = document.getElementById('stat-turnos-pendientes');
+    const statAsistio  = document.getElementById('stat-turnos-asistio');
+    const statNoAsist  = document.getElementById('stat-turnos-noasistio');
+    const badge        = document.getElementById('nav-badge-turnos');
+
+    if (statTotal)   statTotal.innerText   = turnos.length;
+    if (statPend)    statPend.innerText    = turnos.filter(t => t.estado === 'pendiente').length;
+    if (statAsistio) statAsistio.innerText = turnos.filter(t => t.estado === 'asistio').length;
+    if (statNoAsist) statNoAsist.innerText = turnos.filter(t => t.estado === 'no_asistio').length;
+    if (badge)       badge.textContent     = turnos.filter(t => t.estado === 'pendiente').length;
+
+    this.renderTabla(turnos, tbody);
+    this.aplicarFiltros(turnos);
+  },
+
+  renderTabla(turnos, tbody) {
+    if (turnos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No hay turnos registrados.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = visible.map(t => `
-      <tr data-id="${t.id}">
-        <td><strong>${t.numero}</strong></td>
+    tbody.innerHTML = turnos.map(t => `
+      <tr>
+        <td><strong>${t.numero_turno}</strong></td>
         <td>${t.fecha}</td>
         <td>${t.hora}</td>
-        <td>${t.nombre}</td>
-        <td><code style="font-size:12px;">${t.dni}</code></td>
-        <td>${t.tramite}</td>
+        <td>${t.nombre}<br/><small style="color:#888;">${t.dni}</small></td>
+        <td><small>${t.tramite}</small></td>
+        <td>${this.origenBadge(t.origen)}</td>
+        <td>${this.estadoBadge(t.estado)}</td>
         <td>
-          <select class="estado-select" data-turno-id="${t.id}" title="Cambiar estado">
-            ${this.ESTADOS.map(e => `<option value="${e}" ${e === t.estado ? 'selected' : ''}>${e}</option>`).join('')}
+          <select class="estado-select" onchange="ModTurnos.cambiarEstado(${t.id}, this.value)">
+            <option value="pendiente"  ${t.estado === 'pendiente'  ? 'selected' : ''}>Pendiente</option>
+            <option value="asistio"    ${t.estado === 'asistio'    ? 'selected' : ''}>Asistió</option>
+            <option value="no_asistio" ${t.estado === 'no_asistio' ? 'selected' : ''}>No asistió</option>
+            <option value="cancelado"  ${t.estado === 'cancelado'  ? 'selected' : ''}>Cancelado</option>
           </select>
         </td>
-        <td>
-          <button class="btn-adm-icon trash" data-delete-turno="${t.id}" title="Eliminar">
-            <i class="bi bi-trash3"></i>
-          </button>
-        </td>
-      </tr>`).join('');
-
-    // Evento cambio de estado
-    tbody.querySelectorAll('.estado-select').forEach(sel => {
-      sel.addEventListener('change', e => {
-        const id = parseInt(e.target.dataset.turnoId);
-        const turnos = this.load();
-        const idx = turnos.findIndex(t => t.id === id);
-        if (idx !== -1) {
-          turnos[idx].estado = e.target.value;
-          this.save(turnos);
-          Toast.show(`Turno ${turnos[idx].numero} actualizado a "${e.target.value}"`, 'success');
-          this.render(filtro);
-        }
-      });
-    });
-
-    // Eliminar turno
-    tbody.querySelectorAll('[data-delete-turno]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.dataset.deleteTurno);
-        if (!confirm('¿Eliminar este turno?')) return;
-        const turnos = this.load().filter(t => t.id !== id);
-        this.save(turnos);
-        Toast.show('Turno eliminado', 'warning');
-        this.render(filtro);
-      });
-    });
+      </tr>
+    `).join('');
   },
 
-  openModal(turno = null) {
-    const titulo = document.getElementById('modal-turno-titulo');
-    const form   = document.getElementById('form-turno');
-    if (!form) return;
+  aplicarFiltros(turnos) {
+    const filtroNombre = document.getElementById('filtro-turnos-nombre');
+    const filtroEstado = document.getElementById('filtro-turnos-estado');
+    const tbody        = document.getElementById('turnos-tbody');
 
-    if (turno) {
-      titulo.textContent = 'Editar Turno';
-      form['turno-id'].value      = turno.id;
-      form['turno-numero'].value  = turno.numero;
-      form['turno-fecha'].value   = turno.fecha;
-      form['turno-hora'].value    = turno.hora;
-      form['turno-nombre'].value  = turno.nombre;
-      form['turno-dni'].value     = turno.dni;
-      form['turno-tramite'].value = turno.tramite;
-      form['turno-estado'].value  = turno.estado;
-    } else {
-      titulo.textContent = 'Nuevo Turno';
-      form.reset();
-      const turnos = this.load();
-      const nextNum = turnos.length + 1;
-      form['turno-numero'].value = `T-${String(nextNum).padStart(3,'0')}`;
-      const hoy = new Date().toISOString().split('T')[0];
-      form['turno-fecha'].value = hoy;
-    }
-    new bootstrap.Modal(document.getElementById('modal-turno')).show();
-  },
+    const filtrar = () => {
+      const texto  = filtroNombre?.value.toLowerCase() || '';
+      const estado = filtroEstado?.value || '';
 
-  handleFormSave() {
-    const form   = document.getElementById('form-turno');
-    if (!form) return;
-    const id     = form['turno-id'].value ? parseInt(form['turno-id'].value) : null;
-    const datos  = {
-      numero:  form['turno-numero'].value.trim(),
-      fecha:   form['turno-fecha'].value,
-      hora:    form['turno-hora'].value,
-      nombre:  form['turno-nombre'].value.trim(),
-      dni:     form['turno-dni'].value.trim(),
-      tramite: form['turno-tramite'].value,
-      estado:  form['turno-estado'].value
+      const filtrados = turnos.filter(t => {
+        const coincideTexto  = !texto ||
+          t.nombre.toLowerCase().includes(texto) ||
+          t.dni.includes(texto) ||
+          t.numero_turno.toLowerCase().includes(texto);
+        const coincideEstado = !estado || t.estado === estado;
+        return coincideTexto && coincideEstado;
+      });
+
+      this.renderTabla(filtrados, tbody);
     };
-    if (!datos.nombre || !datos.dni || !datos.fecha) { Toast.show('Completá los campos requeridos', 'error'); return; }
 
-    const turnos = this.load();
-    if (id) {
-      const idx = turnos.findIndex(t => t.id === id);
-      if (idx !== -1) turnos[idx] = { ...turnos[idx], ...datos };
-      Toast.show('Turno actualizado correctamente', 'success');
-    } else {
-      turnos.push({ id: Store.nextId(turnos), ...datos });
-      Toast.show('Turno creado correctamente', 'success');
-    }
-    this.save(turnos);
-    bootstrap.Modal.getInstance(document.getElementById('modal-turno'))?.hide();
-    this.render();
+    filtroNombre?.addEventListener('input',  filtrar);
+    filtroEstado?.addEventListener('change', filtrar);
   },
 
-  init() {
-    // Filtro búsqueda
-    document.getElementById('filtro-turno')?.addEventListener('input', e => this.render(e.target.value));
-    document.getElementById('filtro-tramite')?.addEventListener('change', e => this.render(e.target.value));
+  async cambiarEstado(id, estado) {
+    try {
+      const r    = await fetch(`/api/turnos/${id}/estado/`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':  this.getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ estado }),
+      });
+      const data = await r.json();
 
-    // Botón nuevo
-    document.getElementById('btn-nuevo-turno')?.addEventListener('click', () => this.openModal());
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+      Toast.show('Estado actualizado.', 'success');
+      await this.init();
 
-    // Guardar modal
-    document.getElementById('btn-guardar-turno')?.addEventListener('click', () => this.handleFormSave());
+    } catch { Toast.show('Error al cambiar estado.', 'error'); }
+  },
 
-    this.render();
+  getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  },
+
+  async init() {
+    const turnos = await this.cargar();
+    this.render(turnos);
   }
 };
 
