@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'usuarios',
     'sedes',
     'tramites_app',
-    'turnos'
+    'turnos',
+    'noticias',
 ]
 
 MIDDLEWARE = [
@@ -137,3 +138,8 @@ SESSION_COOKIE_AGE = 60 * 60 * 8
 
 # Cada request reinicia el contador
 SESSION_SAVE_EVERY_REQUEST = True
+
+# ── Archivos de media (imágenes subidas) ──
+import os
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
