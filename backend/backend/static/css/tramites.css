@@ -411,10 +411,42 @@ body {
 }
 
 .tramite-sidebar-card p,
-.tramite-sidebar-card ul {
+.tramite-sidebar-card ul,
+.tramite-sidebar-card li {
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.7;
+}
+
+/* ── Texto general dentro de tramite-card ── */
+.tramite-card p,
+.tramite-card ul li,
+.tramite-card ol li {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.8;
+  color: #333;
+}
+
+/* ── Breadcrumb más legible ── */
+.breadcrumb-item {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── Tabla de costos ── */
+.tramite-sidebar-card .list-unstyled li {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+/* ── Texto dentro del detalle genérico ── */
+.tramite-card [style*="font-size:15px"],
+.tramite-card [style*="font-size:14px"] {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  line-height: 1.8 !important;
 }
 
 /* ---------- RESPONSIVE ---------- */

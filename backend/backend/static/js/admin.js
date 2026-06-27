@@ -1,6 +1,6 @@
 /**
  * admin.js — Panel Administrativo | Registro Civil Santiago del Estero
- * Maneja: autenticación, turnos, usuarios, noticias — todo en localStorage.
+ * Maneja: autenticación, turnos, usuarios y noticias vía API Django.
  */
 
 'use strict';
@@ -18,8 +18,7 @@ const _CV = [
 const STORAGE_KEYS = {
   SESSION:  'rc_session',
   TURNOS:   'rc_turnos',
-  USUARIOS: 'rc_usuarios',
-  NOTICIAS: 'rc_noticias'
+  USUARIOS: 'rc_usuarios'
 };
 
 /* ════════════════════════════════════════════════
@@ -34,12 +33,6 @@ const SEED_TURNOS = [
   { id:5, numero:'T-005', fecha:'2026-04-18', hora:'09:30', nombre:'Laura Fernández', dni:'33567890', tramite:'Nacimiento',    estado:'Cancelado'  },
   { id:6, numero:'T-006', fecha:'2026-04-19', hora:'10:30', nombre:'Jorge Sánchez',   dni:'27890123', tramite:'Matrimonio',    estado:'Pendiente'  },
   { id:7, numero:'T-007', fecha:'2026-04-19', hora:'11:00', nombre:'Sofía Herrera',   dni:'38901234', tramite:'Identificación',estado:'Asistió'    }
-];
-
-const SEED_NOTICIAS = [
-  { id:1, titulo:'Nuevas medidas para el registro de nacimientos en hospitales públicos', fecha:'2026-04-10', tag:'Institucional', icono:'bi-newspaper',            cuerpo:'A partir del 15 de abril, todos los hospitales públicos de la provincia contarán con un delegado del Registro Civil para la inscripción inmediata de nacimientos. Las familias no deberán trasladarse a las oficinas centrales.' },
-  { id:2, titulo:'El Registro Civil amplía su horario durante el mes de mayo',            fecha:'2026-04-05', tag:'Trámites',      icono:'bi-megaphone-fill',        cuerpo:'Durante todo el mes de mayo, las sedes del Registro Civil atenderán de 8:00 a 15:00 hs. de lunes a viernes, con el objetivo de reducir la demanda acumulada de trámites.' },
-  { id:3, titulo:'Sistema de actas digitales: avance en la modernización del Registro',   fecha:'2026-04-01', tag:'Digitalización',icono:'bi-file-earmark-text-fill',cuerpo:'La provincia avanza en la digitalización de todas sus actas de estado civil. Este sistema permitirá solicitar copias en formato digital con firma electrónica.' }
 ];
 
 const SEED_USUARIOS = [
@@ -57,8 +50,7 @@ const Store = {
 
   // Inicializar todos los datos si no existen
 initAll() {
-    Store.init(STORAGE_KEYS.TURNOS,   SEED_TURNOS);
-    Store.init(STORAGE_KEYS.NOTICIAS, SEED_NOTICIAS);
+    Store.init(STORAGE_KEYS.TURNOS, SEED_TURNOS);
 },
 
   nextId(arr) { return arr.length ? Math.max(...arr.map(x => x.id)) + 1 : 1; }
@@ -151,6 +143,7 @@ function initNav() {
       if (target === 'tramites-panel') ModTramites.init();
       if (target === 'sedes')          ModSedes.init();
       if (target === 'usuarios')       ModUsuarios.init();
+      if (target === 'noticias')       ModNoticias.init();
 
       // Cerrar sidebar y overlay en mobile — delegado a cerrarSidebar()
       if (typeof cerrarSidebar === 'function') cerrarSidebar();
@@ -295,10 +288,135 @@ const ModTurnos = {
     if (parts.length === 2) return parts.pop().split(';').shift();
   },
 
-  async init() {
-    const turnos = await this.cargar();
-    this.render(turnos);
+async init() {
+  const btnNuevo = document.getElementById('btn-nuevo-turno');
+  if (btnNuevo) btnNuevo.onclick = () => this.openModal();
+
+  const turnos = await this.cargar();
+  this.render(turnos);
+},
+
+openModal(turno = null) {
+  const modal = document.getElementById('modal-turno');
+  if (!modal) return;
+  // Resetear form si existe
+  const form = document.getElementById('form-turno');
+  if (form) form.reset();
+  new bootstrap.Modal(modal).show();
+},
+
+openModal(turno = null) {
+  const form  = document.getElementById('form-turno');
+  const titulo = document.getElementById('modal-turno-titulo');
+  if (!form) return;
+
+  form.reset();
+  form['turno-id'].value = '';
+  titulo.textContent = 'Nuevo Turno Manual';
+
+  // Fecha mínima = hoy
+  const fechaInput = document.getElementById('adm-turno-fecha');
+  if (fechaInput) {
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaInput.min = hoy;
+    fechaInput.onchange = () => ModTurnos.cargarHorarios();
   }
+
+  // Reset horarios
+  const selectHora = document.getElementById('adm-turno-hora');
+  if (selectHora) selectHora.innerHTML = '<option value="">Seleccioná una fecha primero</option>';
+
+  new bootstrap.Modal(document.getElementById('modal-turno')).show();
+},
+
+async cargarHorarios() {
+  const fecha     = document.getElementById('adm-turno-fecha').value;
+  const selectH   = document.getElementById('adm-turno-hora');
+  const aviso     = document.getElementById('adm-fecha-aviso');
+  const avisoMsg  = document.getElementById('adm-fecha-aviso-msg');
+  if (!fecha || !selectH) return;
+
+  selectH.innerHTML = '<option value="">Cargando...</option>';
+  aviso.style.display = 'none';
+
+  try {
+    const r    = await fetch(`/api/turnos/disponibilidad/?fecha=${fecha}`);
+    const data = await r.json();
+
+    selectH.innerHTML = '<option value="">Seleccioná un horario</option>';
+
+    if (!data.habil) {
+      aviso.style.display = 'block';
+      avisoMsg.textContent = 'Este día no es hábil (feriado o fin de semana).';
+      selectH.innerHTML = '<option value="">No hay turnos este día</option>';
+      return;
+    }
+
+    if (!data.habil_dia) {
+      aviso.style.display = 'block';
+      avisoMsg.textContent = 'Este día ya no tiene más turnos disponibles (máximo 20).';
+      return;
+    }
+
+    data.slots.forEach(slot => {
+      const opt = document.createElement('option');
+      opt.value = slot.hora;
+      opt.textContent = slot.lleno
+        ? `${slot.hora} hs. — Sin disponibilidad`
+        : `${slot.hora} hs.`;
+      opt.disabled = slot.lleno;
+      selectH.appendChild(opt);
+    });
+
+  } catch {
+    selectH.innerHTML = '<option value="">Error al cargar horarios</option>';
+  }
+},
+
+async handleFormSave() {
+  const form = document.getElementById('form-turno');
+  if (!form) return;
+
+  const tramite   = form['turno-tramite'].value;
+  const fecha     = form['turno-fecha'].value;
+  const hora      = form['turno-hora'].value;
+  const nombre    = form['turno-nombre'].value.trim();
+  const dni       = form['turno-dni'].value.trim();
+  const email     = form['turno-email'].value.trim();
+  const telefono  = form['turno-telefono']?.value.trim() || '';
+  const direccion = form['turno-direccion']?.value.trim() || '';
+  const estado    = form['turno-estado'].value;
+
+  if (!tramite || !fecha || !hora || !nombre || !dni || !email) {
+    Toast.show('Completá todos los campos obligatorios.', 'error');
+    return;
+  }
+
+  try {
+    const r    = await fetch('/api/turnos/crear/', {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken':  this.getCookie('csrftoken'),
+      },
+      body: JSON.stringify({
+        tramite, fecha, hora, nombre, dni, email,
+        telefono, direccion,
+        origen: 'manual',
+        estado,
+      }),
+    });
+    const data = await r.json();
+
+    if (data.error) { Toast.show(data.error, 'error'); return; }
+
+    bootstrap.Modal.getInstance(document.getElementById('modal-turno'))?.hide();
+    Toast.show(`Turno ${data.numero_turno} creado correctamente.`, 'success');
+    await this.init();
+
+  } catch { Toast.show('Error al guardar turno.', 'error'); }
+},
+
 };
 
 /* ════════════════════════════════════════════════
@@ -475,34 +593,59 @@ async init() {
    ════════════════════════════════════════════════ */
 
 const ModNoticias = {
-  ICONOS: ['bi-newspaper','bi-megaphone-fill','bi-file-earmark-text-fill','bi-bell-fill','bi-info-circle-fill'],
+  _cache: [],
 
-  load()    { return Store.get(STORAGE_KEYS.NOTICIAS) || []; },
-  save(arr) { Store.set(STORAGE_KEYS.NOTICIAS, arr); },
+  async cargar() {
+    const r    = await fetch('/api/noticias/');
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error al cargar noticias');
+    return data.noticias || [];
+  },
 
-  render() {
-    const noticias = this.load();
-    const grid     = document.getElementById('noticias-admin-grid');
+  estadoBadge(estado) {
+    const map = {
+      borrador:  { cls: 'badge-pendiente',  label: 'Borrador' },
+      revision:  { cls: 'badge-operador',   label: 'En revisión' },
+      publicada: { cls: 'badge-asistio',    label: 'Publicada' },
+      archivada: { cls: 'badge-noasistio',  label: 'Archivada' },
+    };
+    const e = map[estado] || { cls: '', label: estado };
+    return `<span class="badge-estado ${e.cls}">${e.label}</span>`;
+  },
+
+  render(noticias) {
+    this._cache = noticias;
+    const grid = document.getElementById('noticias-admin-grid');
     if (!grid) return;
 
-    document.getElementById('stat-total-noticias') && (document.getElementById('stat-total-noticias').innerText = noticias.length);
+    const stat = document.getElementById('stat-total-noticias');
+    const badge = document.getElementById('nav-badge-noticias');
+    const publicadas = noticias.filter(n => n.estado === 'publicada').length;
+
+    if (stat) stat.innerText = publicadas;
+    if (badge) badge.textContent = noticias.length;
 
     if (noticias.length === 0) {
       grid.innerHTML = `<div class="col-12"><div class="adm-empty"><i class="bi bi-newspaper"></i><p>No hay noticias. Creá una nueva.</p></div></div>`;
       return;
     }
 
-    grid.innerHTML = noticias.map((n, idx) => `
+    grid.innerHTML = noticias.map(n => {
+      const preview = n.cuerpo.length > 90 ? `${n.cuerpo.substring(0, 90)}…` : n.cuerpo;
+      const thumb = n.imagen
+        ? `<img src="${n.imagen}" alt="">`
+        : `<i class="bi bi-newspaper"></i>`;
+
+      return `
       <div class="col-12 col-md-6 col-lg-4">
         <div class="adm-noticia-card">
-          <div class="adm-noticia-thumb">
-            <i class="bi ${n.icono || this.ICONOS[idx % this.ICONOS.length]}"></i>
-          </div>
+          <div class="adm-noticia-thumb">${thumb}</div>
           <div class="adm-noticia-body">
             <span class="adm-noticia-tag">${n.tag || 'General'}</span>
             <div class="adm-noticia-titulo">${n.titulo}</div>
             <div class="adm-noticia-fecha"><i class="bi bi-calendar3"></i> ${n.fecha}</div>
-            <div class="adm-noticia-cuerpo-preview">${n.cuerpo.substring(0,90)}…</div>
+            <div class="mb-2">${this.estadoBadge(n.estado)}</div>
+            <div class="adm-noticia-cuerpo-preview">${preview}</div>
             <div class="adm-noticia-actions">
               <button class="btn-adm-icon edit" data-edit-noticia="${n.id}" title="Editar">
                 <i class="bi bi-pencil-square"></i>
@@ -513,78 +656,142 @@ const ModNoticias = {
             </div>
           </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     grid.querySelectorAll('[data-edit-noticia]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const n = this.load().find(x => x.id === parseInt(btn.dataset.editNoticia));
+        const n = this._cache.find(x => x.id === parseInt(btn.dataset.editNoticia, 10));
         if (n) this.openModal(n);
       });
     });
 
     grid.querySelectorAll('[data-delete-noticia]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!confirm('¿Eliminar esta noticia?')) return;
-        this.save(this.load().filter(x => x.id !== parseInt(btn.dataset.deleteNoticia)));
-        Toast.show('Noticia eliminada', 'warning');
-        this.render();
-      });
+      btn.addEventListener('click', () => this.eliminar(parseInt(btn.dataset.deleteNoticia, 10)));
     });
   },
 
   openModal(noticia = null) {
-    const titulo = document.getElementById('modal-noticia-titulo');
-    const form   = document.getElementById('form-noticia');
+    const titulo  = document.getElementById('modal-noticia-titulo');
+    const form    = document.getElementById('form-noticia');
+    const preview = document.getElementById('noticia-imagen-preview');
     if (!form) return;
+
+    form.reset();
+    if (preview) preview.style.display = 'none';
 
     if (noticia) {
       titulo.textContent = 'Editar Noticia';
-      form['noticia-id'].value = noticia.id;
+      form['noticia-id'].value     = noticia.id;
       form['noticia-titulo'].value = noticia.titulo;
-      form['noticia-fecha'].value  = noticia.fecha;
-      form['noticia-tag'].value = noticia.tag;
-      form['noticia-icono'].value  = noticia.icono || this.ICONOS[0];
+      form['noticia-tag'].value    = noticia.tag || 'General';
+      form['noticia-estado'].value = noticia.estado || 'borrador';
       form['noticia-cuerpo'].value = noticia.cuerpo;
+
+      if (noticia.imagen && preview) {
+        preview.querySelector('img').src = noticia.imagen;
+        preview.style.display = 'block';
+      }
     } else {
       titulo.textContent = 'Nueva Noticia';
-      form.reset();
-      form['noticia-id'].value    = '';
-      form['noticia-fecha'].value = new Date().toISOString().split('T')[0];
+      form['noticia-id'].value       = '';
+      form['noticia-estado'].value   = 'borrador';
     }
+
     new bootstrap.Modal(document.getElementById('modal-noticia-form')).show();
   },
 
-  handleFormSave() {
-    const form  = document.getElementById('form-noticia');
+  async handleFormSave() {
+    const form = document.getElementById('form-noticia');
     if (!form) return;
-    const id    = form['noticia-id'].value ? parseInt(form['noticia-id'].value) : null;
-    const datos = {
-      titulo: form['noticia-titulo'].value.trim(),
-      fecha:  form['noticia-fecha'].value,
-      tag:    form['noticia-tag'].value.trim() || 'General',
-      icono:  form['noticia-icono'].value || this.ICONOS[0],
-      cuerpo: form['noticia-cuerpo'].value.trim()
-    };
-    if (!datos.titulo || !datos.cuerpo) { Toast.show('Título y contenido son requeridos', 'error'); return; }
 
-    const noticias = this.load();
-    if (id) {
-      const idx = noticias.findIndex(n => n.id === id);
-      if (idx !== -1) noticias[idx] = { ...noticias[idx], ...datos };
-      Toast.show('Noticia actualizada correctamente', 'success');
-    } else {
-      noticias.unshift({ id: Store.nextId(noticias), ...datos });
-      Toast.show('Noticia creada correctamente', 'success');
+    const id     = form['noticia-id'].value;
+    const titulo = form['noticia-titulo'].value.trim();
+    const cuerpo = form['noticia-cuerpo'].value.trim();
+    const tag    = form['noticia-tag'].value;
+    const estado = form['noticia-estado'].value;
+    const imagen = form['noticia-imagen']?.files?.[0];
+
+    if (!titulo || !cuerpo) {
+      Toast.show('Título y contenido son requeridos', 'error');
+      return;
     }
-    this.save(noticias);
-    bootstrap.Modal.getInstance(document.getElementById('modal-noticia-form'))?.hide();
-    this.render();
+
+    const formData = new FormData();
+    formData.append('titulo', titulo);
+    formData.append('cuerpo', cuerpo);
+    formData.append('tag', tag);
+    formData.append('estado', estado);
+    if (imagen) formData.append('imagen', imagen);
+
+    const url = id ? `/api/noticias/${id}/editar/` : '/api/noticias/crear/';
+
+    try {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': this.getCookie('csrftoken') },
+        body: formData,
+      });
+      const data = await r.json();
+
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+
+      bootstrap.Modal.getInstance(document.getElementById('modal-noticia-form'))?.hide();
+      Toast.show(id ? 'Noticia actualizada correctamente' : 'Noticia creada correctamente', 'success');
+      await this.init();
+    } catch {
+      Toast.show('Error al guardar noticia.', 'error');
+    }
   },
 
-  init() {
-    document.getElementById('btn-nueva-noticia')?.addEventListener('click', () => this.openModal());
-    document.getElementById('btn-guardar-noticia')?.addEventListener('click', () => this.handleFormSave());
-    this.render();
+  async eliminar(id) {
+    if (!confirm('¿Eliminar esta noticia? Esta acción no se puede deshacer.')) return;
+
+    try {
+      const r = await fetch(`/api/noticias/${id}/eliminar/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': this.getCookie('csrftoken') },
+      });
+      const data = await r.json();
+
+      if (data.error) { Toast.show(data.error, 'error'); return; }
+      Toast.show('Noticia eliminada', 'warning');
+      await this.init();
+    } catch {
+      Toast.show('Error al eliminar noticia.', 'error');
+    }
+  },
+
+  getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  },
+
+  async init() {
+    const btnNueva   = document.getElementById('btn-nueva-noticia');
+    const btnGuardar = document.getElementById('btn-guardar-noticia');
+
+    if (btnNueva)   btnNueva.onclick   = () => this.openModal();
+    if (btnGuardar) btnGuardar.onclick = () => this.handleFormSave();
+
+    const inputImagen = document.querySelector('[name="noticia-imagen"]');
+    if (inputImagen && !inputImagen.dataset.bound) {
+      inputImagen.dataset.bound = '1';
+      inputImagen.addEventListener('change', () => {
+        const preview = document.getElementById('noticia-imagen-preview');
+        if (!preview || !inputImagen.files?.[0]) return;
+        preview.querySelector('img').src = URL.createObjectURL(inputImagen.files[0]);
+        preview.style.display = 'block';
+      });
+    }
+
+    try {
+      const noticias = await this.cargar();
+      this.render(noticias);
+    } catch {
+      Toast.show('Error al cargar noticias.', 'error');
+    }
   }
 };
 

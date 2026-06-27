@@ -21,8 +21,9 @@
     .adm-noticia-thumb {
       height: 110px; background: linear-gradient(135deg,#f5c6cb,#e8b4bc);
       display: flex; align-items: center; justify-content: center;
-      font-size: 36px; color: var(--adm-red);
+      font-size: 36px; color: var(--adm-red); overflow: hidden;
     }
+    .adm-noticia-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .adm-noticia-body { padding: 14px 16px 16px; }
     .adm-noticia-tag  { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--adm-red); display: block; margin-bottom: 5px; }
     .adm-noticia-titulo { font-weight: 700; font-size: 13.5px; line-height: 1.4; margin-bottom: 6px; color: var(--adm-text); }
@@ -409,8 +410,8 @@
 
     <div class="adm-card">
       <div class="adm-card-header">
-        <h5><i class="bi bi-grid-3x3-gap"></i> Noticias publicadas</h5>
-        <small class="text-muted" style="font-size:12px;">Las 3 más recientes se muestran en el sitio público.</small>
+        <h5><i class="bi bi-grid-3x3-gap"></i> Todas las noticias</h5>
+        <small class="text-muted" style="font-size:12px;">Las publicadas se muestran en el sitio público.</small>
       </div>
       <div class="adm-card-body">
         <div class="row g-3" id="noticias-admin-grid">
@@ -582,76 +583,116 @@
      MODALES
 ══════════════════════════════════════════ -->
 
-<!-- Modal Turno -->
+<!-- Modal Turno (carga manual por empleado) -->
 <div class="modal fade" id="modal-turno" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header adm-modal-header">
-        <h5 class="modal-title" id="modal-turno-titulo">Nuevo Turno</h5>
+        <h5 class="modal-title" id="modal-turno-titulo">Nuevo Turno Manual</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <form id="form-turno" novalidate>
           <input type="hidden" name="turno-id"/>
           <div class="row g-3">
-            <div class="col-6">
+
+            <div class="col-12">
               <div class="adm-form-group">
-                <label>Número de turno</label>
-                <input type="text" name="turno-numero" class="adm-form-control" placeholder="T-001" readonly/>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="adm-form-group">
-                <label>Trámite</label>
+                <label>Trámite <span style="color:var(--adm-red)">*</span></label>
                 <select name="turno-tramite" class="adm-form-control">
-                  <option>Nacimiento</option>
-                  <option>Identificación</option>
-                  <option>Matrimonio</option>
-                  <option>Defunción</option>
+                  <option value="">Seleccionar trámite</option>
+                  <option value="dni-5-8">DNI – Actualización 5-8 años</option>
+                  <option value="dni-14">DNI – Actualización 14 años</option>
+                  <option value="dni-domicilio">DNI – Cambio de domicilio</option>
+                  <option value="dni-nuevo">DNI – Nuevo ejemplar</option>
+                  <option value="pasaporte">Pasaporte</option>
                 </select>
               </div>
             </div>
+
             <div class="col-6">
               <div class="adm-form-group">
                 <label>Fecha <span style="color:var(--adm-red)">*</span></label>
-                <input type="date" name="turno-fecha" class="adm-form-control" required/>
+                <input type="date" name="turno-fecha" id="adm-turno-fecha" class="adm-form-control" required/>
+                <small id="adm-fecha-aviso" class="text-danger" style="display:none;font-size:12px;">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  <span id="adm-fecha-aviso-msg"></span>
+                </small>
               </div>
             </div>
+
             <div class="col-6">
               <div class="adm-form-group">
-                <label>Hora</label>
-                <input type="time" name="turno-hora" class="adm-form-control" value="09:00"/>
+                <label>Horario <span style="color:var(--adm-red)">*</span></label>
+                <select name="turno-hora" id="adm-turno-hora" class="adm-form-control">
+                  <option value="">Seleccioná una fecha primero</option>
+                </select>
               </div>
             </div>
+
             <div class="col-12">
               <div class="adm-form-group">
                 <label>Nombre completo <span style="color:var(--adm-red)">*</span></label>
-                <input type="text" name="turno-nombre" class="adm-form-control" placeholder="Ej: Juan García" required/>
+                <input type="text" name="turno-nombre" class="adm-form-control"
+                  placeholder="Ej: Juan García" required/>
               </div>
             </div>
+
             <div class="col-6">
               <div class="adm-form-group">
                 <label>DNI <span style="color:var(--adm-red)">*</span></label>
-                <input type="text" name="turno-dni" class="adm-form-control" placeholder="Ej: 32456789" required/>
+                <input type="text" name="turno-dni" class="adm-form-control"
+                  placeholder="Ej: 32456789" maxlength="8" required/>
               </div>
             </div>
+
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Email <span style="color:var(--adm-red)">*</span></label>
+                <input type="email" name="turno-email" class="adm-form-control"
+                  placeholder="correo@ejemplo.com" required/>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <div class="adm-form-group">
+                <label>Teléfono</label>
+                <input type="text" name="turno-telefono" class="adm-form-control"
+                  placeholder="Ej: 3854123456"/>
+              </div>
+            </div>
+
             <div class="col-6">
               <div class="adm-form-group">
                 <label>Estado</label>
                 <select name="turno-estado" class="adm-form-control">
-                  <option>Pendiente</option>
-                  <option>Asistió</option>
-                  <option>No asistió</option>
-                  <option>Cancelado</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="asistio">Asistió</option>
+                  <option value="no_asistio">No asistió</option>
+                  <option value="cancelado">Cancelado</option>
                 </select>
               </div>
             </div>
+
+            <div class="col-12">
+              <div class="adm-form-group">
+                <label>Dirección</label>
+                <input type="text" name="turno-direccion" class="adm-form-control"
+                  placeholder="Ej: Av. Belgrano 1234"/>
+              </div>
+            </div>
+
           </div>
         </form>
       </div>
       <div class="modal-footer" style="gap:10px;">
-        <button class="btn-adm-secondary" data-bs-dismiss="modal"><i class="bi bi-x"></i> Cancelar</button>
-        <button class="btn-adm-primary" id="btn-guardar-turno"><i class="bi bi-check-lg"></i> Guardar turno</button>
+        <button class="btn-adm-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x"></i> Cancelar
+        </button>
+        <button class="btn-adm-primary" id="btn-guardar-turno"
+          onclick="ModTurnos.handleFormSave()">
+          <i class="bi bi-check-lg"></i> Guardar turno
+        </button>
       </div>
     </div>
   </div>
@@ -707,7 +748,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
-        <form id="form-noticia" novalidate>
+        <form id="form-noticia" novalidate enctype="multipart/form-data">
           <input type="hidden" name="noticia-id"/>
           <div class="adm-form-group">
             <label>Título <span style="color:var(--adm-red)">*</span></label>
@@ -716,27 +757,34 @@
           <div class="row g-3">
             <div class="col-6">
               <div class="adm-form-group">
-                <label>Fecha</label>
-                <input type="date" name="noticia-fecha" class="adm-form-control"/>
+                <label>Categoría / Tag</label>
+                <select name="noticia-tag" class="adm-form-control">
+                  <option value="Institucional">Institucional</option>
+                  <option value="Trámites">Trámites</option>
+                  <option value="Digitalización">Digitalización</option>
+                  <option value="Eventos">Eventos</option>
+                  <option value="General">General</option>
+                </select>
               </div>
             </div>
             <div class="col-6">
               <div class="adm-form-group">
-                <label>Categoría / Tag</label>
-                <input type="text" name="noticia-tag" class="adm-form-control" placeholder="Ej: Institucional"/>
+                <label>Estado</label>
+                <select name="noticia-estado" class="adm-form-control">
+                  <option value="borrador">Borrador</option>
+                  <option value="revision">En revisión</option>
+                  <option value="publicada">Publicada</option>
+                  <option value="archivada">Archivada</option>
+                </select>
               </div>
             </div>
           </div>
           <div class="adm-form-group">
-            <label>Ícono Bootstrap (clase)</label>
-            <select name="noticia-icono" class="adm-form-control">
-              <option value="bi-newspaper">📰 bi-newspaper</option>
-              <option value="bi-megaphone-fill">📢 bi-megaphone-fill</option>
-              <option value="bi-file-earmark-text-fill">📄 bi-file-earmark-text-fill</option>
-              <option value="bi-bell-fill">🔔 bi-bell-fill</option>
-              <option value="bi-info-circle-fill">ℹ️  bi-info-circle-fill</option>
-              <option value="bi-calendar-event-fill">📅 bi-calendar-event-fill</option>
-            </select>
+            <label>Imagen (opcional)</label>
+            <input type="file" name="noticia-imagen" class="adm-form-control" accept="image/*"/>
+            <div id="noticia-imagen-preview" class="mt-2" style="display:none;">
+              <img src="" alt="Vista previa" style="max-height:120px;border-radius:8px;"/>
+            </div>
           </div>
           <div class="adm-form-group">
             <label>Contenido <span style="color:var(--adm-red)">*</span></label>
@@ -747,7 +795,7 @@
       </div>
       <div class="modal-footer" style="gap:10px;">
         <button class="btn-adm-secondary" data-bs-dismiss="modal"><i class="bi bi-x"></i> Cancelar</button>
-        <button class="btn-adm-primary" id="btn-guardar-noticia"><i class="bi bi-check-lg"></i> Publicar noticia</button>
+        <button class="btn-adm-primary" id="btn-guardar-noticia"><i class="bi bi-check-lg"></i> Guardar noticia</button>
       </div>
     </div>
   </div>
@@ -995,20 +1043,31 @@
     document.getElementById('adm-overlay')?.classList.remove('open');
   }
 
-  // ── Badges en tiempo real desde localStorage ──
-  function updateBadges() {
+  // ── Badges del sidebar desde la API ──
+  async function updateBadges() {
     try {
-      const t     = JSON.parse(localStorage.getItem('rc_turnos')   || '[]');
-      const n     = JSON.parse(localStorage.getItem('rc_noticias') || '[]');
-      const pendT = t.filter(x => x.estado === 'Pendiente').length;
-      document.getElementById('nav-badge-turnos')   &&
-        (document.getElementById('nav-badge-turnos').textContent   = pendT || t.length);
-      document.getElementById('nav-badge-noticias') &&
-        (document.getElementById('nav-badge-noticias').textContent = n.length);
+      const [turnosRes, noticiasRes] = await Promise.all([
+        fetch('/api/turnos/'),
+        fetch('/api/noticias/'),
+      ]);
+
+      if (turnosRes.ok) {
+        const data = await turnosRes.json();
+        const turnos = data.turnos || [];
+        const pendT = turnos.filter(x => x.estado === 'pendiente').length;
+        const badgeTurnos = document.getElementById('nav-badge-turnos');
+        if (badgeTurnos) badgeTurnos.textContent = pendT || turnos.length;
+      }
+
+      if (noticiasRes.ok) {
+        const data = await noticiasRes.json();
+        const noticias = data.noticias || [];
+        const badgeNoticias = document.getElementById('nav-badge-noticias');
+        if (badgeNoticias) badgeNoticias.textContent = noticias.length;
+      }
     } catch {}
   }
 
-  window.addEventListener('storage', updateBadges);
   setTimeout(updateBadges, 500);
 </script>
 </body>

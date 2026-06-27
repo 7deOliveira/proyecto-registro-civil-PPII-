@@ -468,7 +468,6 @@ body {
   overflow: hidden;
   border: 1px solid var(--rc-border);
   background: #fff;
-  height: 100%;
   display: flex;
   flex-direction: column;
   transition: box-shadow 0.25s, transform 0.25s;
@@ -481,21 +480,30 @@ body {
 
 .news-thumb-placeholder {
   width: 100%;
-  height: 155px;
+  height: 88px;
   background: linear-gradient(135deg, #f5c6cb 0%, #e8b4bc 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 28px;
   color: var(--rc-red);
   flex-shrink: 0;
 }
 
+.news-thumb {
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  flex-shrink: 0;
+}
+
 .news-body {
-  padding: 14px 16px 18px;
+  padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
-  flex: 1;
+  gap: 4px;
 }
 
 .news-tag {
@@ -504,22 +512,36 @@ body {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--rc-red);
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 
 .news-title {
   font-weight: 700;
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 13.5px;
+  line-height: 1.35;
   color: var(--rc-dark);
-  margin-bottom: 8px;
-  flex: 1;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-excerpt {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--rc-text-muted);
+  margin-bottom: 6px;
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .news-date {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--rc-text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 /* Botón rojo reutilizable */
@@ -540,6 +562,52 @@ body {
 }
 
 .btn-rc:hover { background: var(--rc-red-dark); color: #fff; }
+
+@media (max-width: 575.98px) {
+  #noticias-grid .news-card {
+    max-width: 100%;
+  }
+
+  .news-thumb,
+  .news-thumb-placeholder {
+    height: 72px;
+  }
+
+  .news-thumb-placeholder {
+    font-size: 24px;
+  }
+
+  .news-body {
+    padding: 10px 12px 12px;
+  }
+
+  .news-title {
+    font-size: 13px;
+    line-clamp: 2;
+  }
+
+  .news-excerpt {
+    font-size: 11.5px;
+    line-clamp: 2;
+  }
+
+  .news-date {
+    font-size: 11px;
+  }
+
+  .news-body .btn-rc {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .news-thumb,
+  .news-thumb-placeholder {
+    height: 80px;
+  }
+}
 
 /* ── Modal noticias ── */
 .modal-header-rc {

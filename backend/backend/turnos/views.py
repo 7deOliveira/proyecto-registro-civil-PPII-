@@ -6,7 +6,6 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from .models import Turno
 from django.db.models import Count
-from django.db.models.functions import TruncDate
 
 # ── Configuración ──
 MAX_POR_HORARIO = 2
@@ -139,6 +138,7 @@ def crear_turno(request):
             fecha     = fecha,
             hora      = hora,
             origen    = origen,
+            estado    = data.get('estado', 'pendiente'),
         )
 
         return JsonResponse({
@@ -204,14 +204,13 @@ def estadisticas(request):
 
     hoy     = date.today()
     hace_7  = hoy - timedelta(days=6)
-    hace_30 = hoy - timedelta(days=29)
 
     # ── Totales generales ──
-    total        = Turno.objects.count()
-    pendientes   = Turno.objects.filter(estado='pendiente').count()
-    asistieron   = Turno.objects.filter(estado='asistio').count()
+    total         = Turno.objects.count()
+    pendientes    = Turno.objects.filter(estado='pendiente').count()
+    asistieron    = Turno.objects.filter(estado='asistio').count()
     no_asistieron = Turno.objects.filter(estado='no_asistio').count()
-    cancelados   = Turno.objects.filter(estado='cancelado').count()
+    cancelados    = Turno.objects.filter(estado='cancelado').count()
 
     # ── Por origen ──
     sistema = Turno.objects.filter(origen='sistema').count()
@@ -224,25 +223,19 @@ def estadisticas(request):
         .order_by('-total')
     )
 
-    # ── Turnos últimos 7 días ──
-    ultimos_7 = list(
-        Turno.objects.filter(fecha__gte=hace_7)
-        .annotate(dia=TruncDate('fecha'))
-        .values('dia')
-        .annotate(total=Count('id'))
-        .order_by('dia')
-    )
-    ultimos_7_fmt = [
-        {'dia': str(x['dia']), 'total': x['total']}
-        for x in ultimos_7
-    ]
+    # ── Últimos 7 días — compatible SQLite ──
+    ultimos_7 = []
+    for i in range(6, -1, -1):
+        dia = hoy - timedelta(days=i)
+        count = Turno.objects.filter(fecha=dia).count()
+        ultimos_7.append({'dia': str(dia), 'total': count})
 
     # ── Tasa de asistencia ──
     atendidos = asistieron + no_asistieron
     tasa_asistencia = round((asistieron / atendidos * 100), 1) if atendidos > 0 else 0
 
-    # ── Turno de hoy ──
-    hoy_total     = Turno.objects.filter(fecha=hoy).count()
+    # ── Hoy ──
+    hoy_total      = Turno.objects.filter(fecha=hoy).count()
     hoy_pendientes = Turno.objects.filter(fecha=hoy, estado='pendiente').count()
 
     return JsonResponse({
@@ -254,7 +247,7 @@ def estadisticas(request):
         'sistema':         sistema,
         'manual':          manual,
         'por_tramite':     por_tramite,
-        'ultimos_7':       ultimos_7_fmt,
+        'ultimos_7':       ultimos_7,
         'tasa_asistencia': tasa_asistencia,
         'hoy_total':       hoy_total,
         'hoy_pendientes':  hoy_pendientes,
