@@ -1,18 +1,39 @@
 from django.shortcuts import render
 from .models import Noticia
+import json
 
 
 # Página principal
 def home(request):
 
-    noticias = Noticia.objects.filter(
+    noticias_qs = Noticia.objects.filter(
         estado='publicada'
     ).order_by('-fecha')[:3]
+
+    noticias_for_js = []
+
+    for n in noticias_qs:
+        try:
+            imagen_url = n.imagen.url
+        except Exception:
+            imagen_url = ''
+
+        noticias_for_js.append({
+            'id': n.pk,
+            'titulo': n.titulo,
+            'fecha': n.fecha.isoformat() if n.fecha else '',
+            'tag': n.tag,
+            'cuerpo': n.cuerpo,
+            'icono': n.icono,
+            'imagen': imagen_url,
+        })
+
+    noticias_json = json.dumps(noticias_for_js, ensure_ascii=False)
 
     return render(
         request,
         'noticias/index.html',
-        {'noticias': noticias}
+        {'noticias': noticias_qs, 'noticias_json': noticias_json}
     )
 
 
