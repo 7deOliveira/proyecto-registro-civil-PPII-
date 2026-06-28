@@ -1,99 +1,81 @@
-'use strict';
+/* ════════════════════════════════════════════
+  noticias.js — Portal público Registro Civil
+  Carga noticias desde Django y maneja el modal
+   ════════════════════════════════════════════ */
 
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+const IMAGEN_DEFAULT = 'https://i.pinimg.com/1200x/26/63/99/266399e10c027c0a8a106c0cf5f58dba.jpg';
 
-function excerpt(text, max = 110) {
-  const t = String(text || '').trim();
-  if (t.length <= max) return t;
-  return `${t.slice(0, max).trim()}…`;
-}
-
-let _noticiasPublicas = [];
-
-const IMAGEN_DEFAULT =
-  'https://i.pinimg.com/736x/8c/c2/b2/8cc2b2e8191e930d298607a299fb92c8.jpg';
-
-function thumbHtml(imagen) {
-  const src = imagen || IMAGEN_DEFAULT;
-  return `<img src="${escHtml(src)}" alt="" class="news-thumb" loading="lazy">`;
-}
-
-async function cargarNoticiasPublicas() {
+async function cargarNoticias() {
   const grid = document.getElementById('noticias-grid');
   if (!grid) return;
 
   try {
-    const r = await fetch('/api/noticias/publicas/');
+    const r    = await fetch('/api/noticias/publicas/');
     const data = await r.json();
-    const noticias = data.noticias || [];
-    _noticiasPublicas = noticias;
 
-    if (noticias.length === 0) {
-      grid.innerHTML = '<div class="col-12 text-center text-muted py-3">No hay noticias disponibles.</div>';
+    if (!data.noticias || data.noticias.length === 0) {
+      grid.innerHTML = `
+        <div class="col-12 text-center text-muted py-4">
+          <i class="bi bi-newspaper" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px;"></i>
+          No hay noticias publicadas por el momento.
+        </div>`;
       return;
     }
 
-    grid.innerHTML = noticias.map(n => {
-      const resumen = excerpt(n.cuerpo);
-
-      return `
-        <div class="col-12 col-sm-6 col-lg-4">
-          <div class="news-card">
-            ${thumbHtml(n.imagen)}
-            <div class="news-body">
-              <span class="news-tag">${escHtml(n.tag || 'General')}</span>
-              <div class="news-title">${escHtml(n.titulo)}</div>
-              <p class="news-excerpt">${escHtml(resumen)}</p>
-              <div class="news-date"><i class="bi bi-calendar3"></i> ${escHtml(n.fecha)}</div>
-              <button type="button" class="btn-rc" data-bs-toggle="modal" data-bs-target="#modalNoticia"
-                data-noticia-id="${n.id}">
-                Ver noticia
-              </button>
-            </div>
+    grid.innerHTML = data.noticias.map(n => `
+      <div class="col-12 col-sm-6 col-md-4 d-flex">
+        <div class="news-card w-100">
+          <div class="news-thumb" style="
+            height:160px;overflow:hidden;flex-shrink:0;
+            background:#f5c6cb;
+          ">
+            <img src="${n.imagen || IMAGEN_DEFAULT}"
+              alt="${n.titulo}"
+              style="width:100%;height:160px;object-fit:cover;display:block;"
+              onerror="this.src='${IMAGEN_DEFAULT}'"
+            />
           </div>
-        </div>`;
-    }).join('');
-  } catch {
-    grid.innerHTML = '<div class="col-12 text-center text-muted py-3">No se pudieron cargar las noticias.</div>';
+          <div class="news-body">
+            <span class="news-tag">${n.tag}</span>
+            <div class="news-title">${n.titulo}</div>
+            <div class="news-date">
+              <i class="bi bi-calendar3"></i> ${n.fecha}
+            </div>
+            <button class="btn-rc" onclick="abrirNoticia(${n.id})">
+              Ver noticia
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Guardar noticias en memoria para el modal
+    window._noticiasCache = data.noticias;
+
+  } catch (e) {
+    console.error('[noticias.js]', e);
+    grid.innerHTML = `
+      <div class="col-12 text-center text-muted py-4">
+        Error al cargar noticias.
+      </div>`;
   }
 }
 
-function initModalNoticias() {
-  const modal = document.getElementById('modalNoticia');
-  if (!modal) return;
+function abrirNoticia(id) {
+  const noticias = window._noticiasCache || [];
+  const n = noticias.find(x => x.id === id);
+  if (!n) return;
 
-  modal.addEventListener('show.bs.modal', (event) => {
-    const btn = event.relatedTarget;
-    if (!btn) return;
+  document.getElementById('modalNoticiaTitulo').textContent = n.titulo;
+  document.getElementById('modalNoticiaFecha').textContent  = n.fecha;
+  document.getElementById('modalNoticiaTag').textContent    = n.tag;
+  document.getElementById('modalNoticiaCuerpo').textContent = n.cuerpo;
 
-    const id = parseInt(btn.dataset.noticiaId, 10);
-    const noticia = _noticiasPublicas.find(n => n.id === id);
+  const img = document.getElementById('modalNoticiaImg');
+  img.src = n.imagen || IMAGEN_DEFAULT;
+  img.onerror = () => { img.src = IMAGEN_DEFAULT; };
 
-    if (noticia) {
-      document.getElementById('modalNoticiaTitulo').textContent = noticia.titulo;
-      document.getElementById('modalNoticiaFecha').innerHTML =
-        `<i class="bi bi-calendar3"></i> ${noticia.fecha}`;
-      document.getElementById('modalNoticiaCuerpo').textContent = noticia.cuerpo;
-      return;
-    }
-
-    document.getElementById('modalNoticiaTitulo').textContent =
-      btn.getAttribute('data-titulo') || 'Noticia';
-    document.getElementById('modalNoticiaFecha').innerHTML =
-      '<i class="bi bi-calendar3"></i> ' + (btn.getAttribute('data-fecha') || '');
-    document.getElementById('modalNoticiaCuerpo').textContent =
-      btn.getAttribute('data-cuerpo') || '';
-  });
+  new bootstrap.Modal(document.getElementById('modalNoticia')).show();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initModalNoticias();
-  cargarNoticiasPublicas();
-});
+document.addEventListener('DOMContentLoaded', cargarNoticias);
