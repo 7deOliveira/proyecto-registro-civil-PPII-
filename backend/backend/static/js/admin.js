@@ -190,26 +190,26 @@ const ModTurnos = {
             </span>`;
   },
 
-  render(turnos) {
-    const tbody = document.getElementById('turnos-tbody');
-    if (!tbody) return;
+render(turnos) {
+  const tbody = document.getElementById('turnos-tbody');
+  if (!tbody) return;
 
-    // Stats
-    const statTotal    = document.getElementById('stat-total-turnos');
-    const statPend     = document.getElementById('stat-turnos-pendientes');
-    const statAsistio  = document.getElementById('stat-turnos-asistio');
-    const statNoAsist  = document.getElementById('stat-turnos-noasistio');
-    const badge        = document.getElementById('nav-badge-turnos');
+  // Stats — IDs que coinciden con el HTML
+  const statTotal   = document.getElementById('stat-total-turnos');
+  const statPend    = document.getElementById('stat-pendientes');
+  const statAsistio = document.getElementById('stat-asistio');
+  const statCancel  = document.getElementById('stat-cancelado');
+  const badge       = document.getElementById('nav-badge-turnos');
 
-    if (statTotal)   statTotal.innerText   = turnos.length;
-    if (statPend)    statPend.innerText    = turnos.filter(t => t.estado === 'pendiente').length;
-    if (statAsistio) statAsistio.innerText = turnos.filter(t => t.estado === 'asistio').length;
-    if (statNoAsist) statNoAsist.innerText = turnos.filter(t => t.estado === 'no_asistio').length;
-    if (badge)       badge.textContent     = turnos.filter(t => t.estado === 'pendiente').length;
+  if (statTotal)   statTotal.innerText   = turnos.length;
+  if (statPend)    statPend.innerText    = turnos.filter(t => t.estado === 'pendiente').length;
+  if (statAsistio) statAsistio.innerText = turnos.filter(t => t.estado === 'asistio').length;
+  if (statCancel)  statCancel.innerText  = turnos.filter(t => t.estado === 'no_asistio' || t.estado === 'cancelado').length;
+  if (badge)       badge.textContent     = turnos.filter(t => t.estado === 'pendiente').length;
 
-    this.renderTabla(turnos, tbody);
-    this.aplicarFiltros(turnos);
-  },
+  this.renderTabla(turnos, tbody);
+  this.aplicarFiltros(turnos);
+},
 
   renderTabla(turnos, tbody) {
     if (turnos.length === 0) {
@@ -238,30 +238,30 @@ const ModTurnos = {
     `).join('');
   },
 
-  aplicarFiltros(turnos) {
-    const filtroNombre = document.getElementById('filtro-turnos-nombre');
-    const filtroEstado = document.getElementById('filtro-turnos-estado');
-    const tbody        = document.getElementById('turnos-tbody');
+aplicarFiltros(turnos) {
+  const filtroNombre  = document.getElementById('filtro-turno');
+  const filtroTramite = document.getElementById('filtro-tramite');
+  const tbody         = document.getElementById('turnos-tbody');
 
-    const filtrar = () => {
-      const texto  = filtroNombre?.value.toLowerCase() || '';
-      const estado = filtroEstado?.value || '';
+  const filtrar = () => {
+    const texto   = filtroNombre?.value.toLowerCase() || '';
+    const tramite = filtroTramite?.value || '';
 
-      const filtrados = turnos.filter(t => {
-        const coincideTexto  = !texto ||
-          t.nombre.toLowerCase().includes(texto) ||
-          t.dni.includes(texto) ||
-          t.numero_turno.toLowerCase().includes(texto);
-        const coincideEstado = !estado || t.estado === estado;
-        return coincideTexto && coincideEstado;
-      });
+    const filtrados = turnos.filter(t => {
+      const coincideTexto   = !texto ||
+        t.nombre.toLowerCase().includes(texto) ||
+        t.dni.includes(texto) ||
+        t.numero_turno.toLowerCase().includes(texto);
+      const coincideTramite = !tramite || t.tramite_slug === tramite;
+      return coincideTexto && coincideTramite;
+    });
 
-      this.renderTabla(filtrados, tbody);
-    };
+    this.renderTabla(filtrados, tbody);
+  };
 
-    filtroNombre?.addEventListener('input',  filtrar);
-    filtroEstado?.addEventListener('change', filtrar);
-  },
+  filtroNombre?.addEventListener('input',  filtrar);
+  filtroTramite?.addEventListener('change', filtrar);
+},
 
   async cambiarEstado(id, estado) {
     try {

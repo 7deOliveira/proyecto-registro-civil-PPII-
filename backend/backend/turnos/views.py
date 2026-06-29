@@ -170,6 +170,7 @@ def listar_turnos(request):
             'hora':         t.hora.strftime('%H:%M'),
             'estado':       t.estado,
             'origen':       t.origen,
+            'tramite_slug': t.tramite,  # ← el valor raw del modelo (dni-5-8, etc.)
         })
     return JsonResponse({'turnos': data})
 
