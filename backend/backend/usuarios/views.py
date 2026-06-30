@@ -63,10 +63,10 @@ def crear_usuario(request):
 @login_required
 @require_POST
 def editar_usuario(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    perfil = get_object_or_404(PerfilEmpleado, user=user)
     try:
         data = json.loads(request.body)
-        user = get_object_or_404(User,id=user_id)
-        perfil = get_object_or_404(PerfilEmpleado,user=user)
 
         nombre = data.get('nombre', '').strip()
         if nombre:
