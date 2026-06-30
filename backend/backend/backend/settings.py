@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-tv=1cz4bwe=7+7w^yk%mxluinc3dr6r=i2mdbc*iysjq^eo%=j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
 
 
 # Application definition
@@ -143,3 +145,21 @@ SESSION_SAVE_EVERY_REQUEST = True
 import os
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+import dj_database_url
+import os
+
+# Base de datos: usa PostgreSQL en producción, SQLite en local
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
+}
+
+# Archivos estáticos
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Whitenoise para servir estáticos
+MIDDLEWARE = ['whitenoise.middleware.WhiteNoiseMiddleware'] + MIDDLEWARE
