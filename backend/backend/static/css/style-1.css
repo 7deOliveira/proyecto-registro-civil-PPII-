@@ -1003,3 +1003,39 @@ footer a i { margin-right: 6px; }
     padding: 18px 16px;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   ANIMACIONES DE SCROLL (Intersection Observer)
+   Mobile-first: traducción corta para no marear en pantallas chicas
+   ═══════════════════════════════════════════════════ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Delays para stagger en grupos de cards */
+.delay-1 { transition-delay: 0.08s; }
+.delay-2 { transition-delay: 0.16s; }
+.delay-3 { transition-delay: 0.24s; }
+.delay-4 { transition-delay: 0.32s; }
+
+/* FAQ items: animación más suave y corta */
+.faq-item.reveal {
+  transform: translateY(14px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Respetar preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

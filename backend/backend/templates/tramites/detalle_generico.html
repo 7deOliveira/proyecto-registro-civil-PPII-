@@ -21,36 +21,81 @@
 
   <div class="container py-5">
     <div class="row g-4">
+
+      <!-- Columna principal -->
       <div class="col-lg-8">
-        <div class="tramite-card mb-4" style="flex-direction:column;align-items:stretch;">
-          <p style="font-size:15px;line-height:1.7;color:#4a5568;margin:0;">
-            {{ tramite.descripcion }}
-          </p>
-        </div>
-        {% if not tramite.es_gratuito and tramite.precio %}
-        <div class="tramite-card" style="flex-direction:column;align-items:stretch;">
-          <div class="tramite-titulo mb-2">
-            <i class="bi bi-cash-coin" style="color:var(--rc-red);margin-right:6px;"></i>
-            Costo del trámite
-          </div>
-          <p style="font-size:15px;margin:0;">${{ tramite.precio }}</p>
+
+        {% if tramite.descripcion %}
+        <div class="tramite-card mb-4">
+          <p class="tramite-intro mb-0">{{ tramite.descripcion|linebreaksbr }}</p>
         </div>
         {% endif %}
+
+        {% if tramite.requisitos %}
+        <div class="tramite-card mb-4">
+          <h2 class="tramite-section-title">
+            <i class="bi bi-clipboard-check me-2"></i>Requisitos
+          </h2>
+          <ul class="tramite-list">
+            {% for linea in tramite.requisitos.splitlines %}
+              {% if linea %}<li>{{ linea }}</li>{% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if tramite.como_se_inicia %}
+        <div class="tramite-card mb-4">
+          <h2 class="tramite-section-title">
+            <i class="bi bi-building me-2"></i>¿Cómo se inicia?
+          </h2>
+          <ul class="tramite-list">
+            {% for linea in tramite.como_se_inicia.splitlines %}
+              {% if linea %}<li>{{ linea }}</li>{% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
       </div>
+
+      <!-- Sidebar -->
       <div class="col-lg-4">
+
         {% if tramite.es_gratuito %}
         <div class="tramite-sidebar-card mb-3">
           <h6 class="sidebar-label"><i class="bi bi-cash-coin me-2"></i>Costo</h6>
           <p class="small mb-0">El trámite es <strong>totalmente gratuito</strong>.</p>
         </div>
+        {% elif tramite.precio %}
+        <div class="tramite-sidebar-card mb-3">
+          <h6 class="sidebar-label"><i class="bi bi-cash-coin me-2"></i>Costo</h6>
+          <p class="small mb-0">${{ tramite.precio }}</p>
+        </div>
         {% endif %}
+
+        {% if tramite.modalidad_presencial or tramite.modalidad_digital %}
+        <div class="tramite-sidebar-card mb-3">
+          <h6 class="sidebar-label"><i class="bi bi-info-circle me-2"></i>Modalidad</h6>
+          {% if tramite.modalidad_presencial %}
+            <span class="badge bg-rc-red me-1">Presencial</span>
+          {% endif %}
+          {% if tramite.modalidad_digital %}
+            <span class="badge bg-secondary">Digital</span>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% if tramite.requiere_turno %}
         <div class="tramite-sidebar-card" style="background:rgba(200,16,46,.04);border-color:rgba(200,16,46,.2);">
           <h6 class="sidebar-label"><i class="bi bi-calendar-check-fill me-2"></i>Turno previo</h6>
           <p class="small mb-3">Para realizar este trámite necesitás turno previo.</p>
           <button data-bs-toggle="modal" data-bs-target="#modalTurno" class="btn-rc">
-        Solicitar turno
-        </button>
+            Solicitar turno
+          </button>
         </div>
+        {% endif %}
+
       </div>
     </div>
   </div>

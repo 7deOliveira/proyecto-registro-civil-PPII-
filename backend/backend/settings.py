@@ -172,5 +172,21 @@ AXES_RESET_ON_SUCCESS     = True  # Resetea el contador al loguearse con éxito
 AXES_ENABLE_ADMIN         = True  # Muestra los intentos en el panel admin
 
 
+# ── Email ────────────────────────────────────────────────────────────────────
+# En desarrollo usa el backend de consola (imprime en terminal, no envía nada).
+# En producción setear EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+# y las variables EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD.
+EMAIL_BACKEND       = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST          = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT          = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS       = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER     = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.getenv(
+    'DEFAULT_FROM_EMAIL',
+    'Registro Civil Santiago del Estero <noreply@registrocivil.gob.ar>'
+)
+
+
 # ── Misc ──────────────────────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

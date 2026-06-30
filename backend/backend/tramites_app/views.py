@@ -37,9 +37,18 @@ def api_listar_tramites(request):
             'slug':       t.slug,
             'icono':      t.icono,
             'estado':     t.estado,
-            'creado_por': t.creado_por.get_full_name() if t.creado_por else 'Sistema',
-            'es_gratuito': t.es_gratuito,
-            'precio':      str(t.precio) if t.precio else None,
+            'creado_por': (
+                'Admin'    if t.creado_por and t.creado_por.is_superuser else
+                'Operador' if t.creado_por and t.creado_por.is_staff else
+                'Sistema'
+            ),
+            'es_gratuito':          t.es_gratuito,
+            'precio':               str(t.precio) if t.precio else None,
+            'requiere_turno':       t.requiere_turno,
+            'requisitos':           t.requisitos,
+            'como_se_inicia':       t.como_se_inicia,
+            'modalidad_presencial': t.modalidad_presencial,
+            'modalidad_digital':    t.modalidad_digital,
         })
     return JsonResponse({'tramites': data})
 
@@ -54,8 +63,13 @@ def api_crear_tramite(request):
         slug        = data.get('slug', '').strip()
         icono       = data.get('icono', 'bi-file-earmark-text').strip()
         categoria_id = data.get('categoria_id')
-        es_gratuito = data.get('es_gratuito', False)
-        precio      = data.get('precio') or None
+        es_gratuito          = data.get('es_gratuito', False)
+        requiere_turno       = data.get('requiere_turno', False)
+        requisitos           = data.get('requisitos', '').strip()
+        como_se_inicia       = data.get('como_se_inicia', '').strip()
+        modalidad_presencial = data.get('modalidad_presencial', False)
+        modalidad_digital    = data.get('modalidad_digital', False)
+        precio               = data.get('precio') or None
 
         if not nombre or not slug:
             return JsonResponse({'error': 'Nombre y slug son obligatorios.'}, status=400)
@@ -78,8 +92,13 @@ def api_crear_tramite(request):
             categoria_id = categoria_id,
             creado_por   = request.user,
             fecha_publicacion = fecha_pub,
-            es_gratuito = es_gratuito,
-            precio      = precio,
+            es_gratuito          = es_gratuito,
+            requiere_turno       = requiere_turno,
+            requisitos           = requisitos,
+            como_se_inicia       = como_se_inicia,
+            modalidad_presencial = modalidad_presencial,
+            modalidad_digital    = modalidad_digital,
+            precio               = precio,
         )
         return JsonResponse({'ok': True, 'id': tramite.id})
 
@@ -118,8 +137,13 @@ def api_editar_tramite(request, tramite_id):
         tramite.nombre      = data.get('nombre', tramite.nombre).strip()
         tramite.descripcion = data.get('descripcion', tramite.descripcion).strip()
         tramite.icono       = data.get('icono', tramite.icono).strip()
-        tramite.es_gratuito = data.get('es_gratuito', tramite.es_gratuito)
-        tramite.precio      = data.get('precio') or None
+        tramite.es_gratuito          = data.get('es_gratuito', tramite.es_gratuito)
+        tramite.requiere_turno       = data.get('requiere_turno', tramite.requiere_turno)
+        tramite.requisitos           = data.get('requisitos', tramite.requisitos).strip()
+        tramite.como_se_inicia       = data.get('como_se_inicia', tramite.como_se_inicia).strip()
+        tramite.modalidad_presencial = data.get('modalidad_presencial', tramite.modalidad_presencial)
+        tramite.modalidad_digital    = data.get('modalidad_digital', tramite.modalidad_digital)
+        tramite.precio               = data.get('precio') or None
 
         if data.get('categoria_id'):
             tramite.categoria_id = data['categoria_id']

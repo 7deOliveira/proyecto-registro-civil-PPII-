@@ -213,7 +213,7 @@ render(turnos) {
 
   renderTabla(turnos, tbody) {
     if (turnos.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No hay turnos registrados.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No hay turnos registrados.</td></tr>`;
       return;
     }
 
@@ -233,6 +233,15 @@ render(turnos) {
             <option value="no_asistio" ${t.estado === 'no_asistio' ? 'selected' : ''}>No asistió</option>
             <option value="cancelado"  ${t.estado === 'cancelado'  ? 'selected' : ''}>Cancelado</option>
           </select>
+        </td>
+        <td style="text-align:center;">
+          <button
+            class="btn-adm-icon edit"
+            title="Reprogramar turno"
+            onclick="ModTurnos.openModalReprogramar(${JSON.stringify(t).replace(/"/g, '&quot;')})"
+            style="padding:4px 8px;">
+            <i class="bi bi-calendar2-week"></i>
+          </button>
         </td>
       </tr>
     `).join('');
@@ -371,6 +380,112 @@ async cargarHorarios() {
   } catch {
     selectH.innerHTML = '<option value="">Error al cargar horarios</option>';
   }
+},
+
+openModalReprogramar(turno) {
+  const form = document.getElementById('form-reprogramar');
+  if (!form) return;
+
+  form.reset();
+  form['reprog-turno-id'].value = turno.id;
+
+  // Info del turno actual
+  document.getElementById('reprog-info-nombre').textContent  = turno.nombre;
+  document.getElementById('reprog-info-tramite').textContent = turno.tramite;
+  document.querySelector('#reprog-info-actual span').textContent =
+    `${turno.fecha} a las ${turno.hora} hs.`;
+
+  // Fecha mínima = hoy
+  const fechaInput = document.getElementById('reprog-fecha');
+  if (fechaInput) {
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaInput.min = hoy;
+    fechaInput.onchange = () => ModTurnos.cargarHorariosReprogramar();
+  }
+
+  // Reset hora select y aviso
+  const selectH = document.getElementById('reprog-hora');
+  if (selectH) selectH.innerHTML = '<option value="">Seleccioná una fecha primero</option>';
+  const aviso = document.getElementById('reprog-fecha-aviso');
+  if (aviso) aviso.style.display = 'none';
+
+  // Botón confirmar
+  const btnConfirmar = document.getElementById('btn-confirmar-reprogramar');
+  if (btnConfirmar) btnConfirmar.onclick = () => ModTurnos.handleReprogramarSave();
+
+  new bootstrap.Modal(document.getElementById('modal-reprogramar')).show();
+},
+
+async cargarHorariosReprogramar() {
+  const fecha   = document.getElementById('reprog-fecha').value;
+  const selectH = document.getElementById('reprog-hora');
+  const aviso   = document.getElementById('reprog-fecha-aviso');
+  if (!fecha || !selectH) return;
+
+  selectH.innerHTML = '<option value="">Cargando...</option>';
+  if (aviso) aviso.style.display = 'none';
+
+  try {
+    const r    = await fetch(`/api/turnos/disponibilidad/?fecha=${fecha}`);
+    const data = await r.json();
+
+    selectH.innerHTML = '<option value="">Seleccioná un horario</option>';
+
+    if (!data.habil) {
+      if (aviso) {
+        aviso.style.display = 'block';
+        aviso.textContent = 'Este día no es hábil (feriado o fin de semana).';
+      }
+      selectH.innerHTML = '<option value="">No hay turnos este día</option>';
+      return;
+    }
+
+    data.slots.forEach(slot => {
+      const opt = document.createElement('option');
+      opt.value = slot.hora;
+      opt.textContent = slot.lleno
+        ? `${slot.hora} hs. — Sin disponibilidad`
+        : `${slot.hora} hs.`;
+      opt.disabled = slot.lleno;
+      selectH.appendChild(opt);
+    });
+
+  } catch {
+    selectH.innerHTML = '<option value="">Error al cargar horarios</option>';
+  }
+},
+
+async handleReprogramarSave() {
+  const form = document.getElementById('form-reprogramar');
+  if (!form) return;
+
+  const id    = form['reprog-turno-id'].value;
+  const fecha = document.getElementById('reprog-fecha').value;
+  const hora  = document.getElementById('reprog-hora').value;
+
+  if (!fecha || !hora) {
+    Toast.show('Seleccioná fecha y horario.', 'error');
+    return;
+  }
+
+  try {
+    const r = await fetch(`/api/turnos/${id}/reprogramar/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken':  this.getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ fecha, hora }),
+    });
+    const data = await r.json();
+
+    if (data.error) { Toast.show(data.error, 'error'); return; }
+
+    bootstrap.Modal.getInstance(document.getElementById('modal-reprogramar'))?.hide();
+    Toast.show('Turno reprogramado. Se notificó al ciudadano por correo.', 'success');
+    await this.init();
+
+  } catch { Toast.show('Error al reprogramar turno.', 'error'); }
 },
 
 async handleFormSave() {
@@ -938,7 +1053,9 @@ const ModTramites = {
       form['tramite-nombre'].value                    = tramite.nombre;
       form['tramite-slug'].value                      = tramite.slug;
       // form['tramite-icono'].value                     = tramite.icono;
-      form['tramite-descripcion'].value               = tramite.descripcion;
+      form['tramite-descripcion'].value               = tramite.descripcion || '';
+      form['tramite-requisitos'].value                = tramite.requisitos || '';
+      form['tramite-como-se-inicia'].value            = tramite.como_se_inicia || '';
       form['tramite-estado'].value                    = tramite.estado;
       if (tramite.categoria) select.value             = tramite.categoria;
       // Deshabilitar slug en edición para no romper URLs
@@ -947,6 +1064,12 @@ const ModTramites = {
       document.getElementById('tramite-gratuito').checked = gratuito;
       document.getElementById('precio-wrap').style.display = gratuito ? 'none' : 'block';
       if (!gratuito && tramite.precio) form['tramite-precio'].value = tramite.precio;
+      const chkTurno = document.getElementById('tramite-requiere-turno');
+      if (chkTurno) chkTurno.checked = !!tramite.requiere_turno;
+      const chkPresencial = document.getElementById('tramite-modalidad-presencial');
+      const chkDigital    = document.getElementById('tramite-modalidad-digital');
+      if (chkPresencial) chkPresencial.checked = !!tramite.modalidad_presencial;
+      if (chkDigital)    chkDigital.checked    = !!tramite.modalidad_digital;
     } else {
       titulo.textContent = 'Nuevo Trámite';
       form.reset();
@@ -962,14 +1085,19 @@ async handleFormSave() {
     const form = document.getElementById('form-tramite-panel');
     if (!form) return;
 
-    const id          = form['tramite-id'].value;
-    const nombre      = form['tramite-nombre'].value.trim();
-    const slug        = form['tramite-slug'].value.trim();
-    const descripcion = form['tramite-descripcion'].value.trim();
-    const estado      = form['tramite-estado'].value;
-    const categoriaId = document.getElementById('select-categoria-tramite').value;
-    const gratuito    = document.getElementById('tramite-gratuito').checked;
-    const precio      = gratuito ? null : (form['tramite-precio'].value || null);
+    const id              = form['tramite-id'].value;
+    const nombre          = form['tramite-nombre'].value.trim();
+    const slug            = form['tramite-slug'].value.trim();
+    const descripcion     = form['tramite-descripcion'].value.trim();
+    const requisitos      = form['tramite-requisitos'].value.trim();
+    const comoSeInicia    = form['tramite-como-se-inicia'].value.trim();
+    const estado          = form['tramite-estado'].value;
+    const categoriaId     = document.getElementById('select-categoria-tramite').value;
+    const gratuito        = document.getElementById('tramite-gratuito').checked;
+    const requiereTurno   = document.getElementById('tramite-requiere-turno')?.checked || false;
+    const modPresencial   = document.getElementById('tramite-modalidad-presencial')?.checked || false;
+    const modDigital      = document.getElementById('tramite-modalidad-digital')?.checked || false;
+    const precio          = gratuito ? null : (form['tramite-precio'].value || null);
 
     if (!nombre) { Toast.show('El nombre es obligatorio.', 'error'); return; }
     if (!id && !slug) { Toast.show('El identificador de URL es obligatorio.', 'error'); return; }
@@ -977,9 +1105,14 @@ async handleFormSave() {
     const url  = id ? `/api/tramites/${id}/editar/` : '/api/tramites/crear/';
     const body = {
       nombre, descripcion, estado,
-      categoria_id: categoriaId || null,
-      es_gratuito:  gratuito,
-      precio:       precio,
+      requisitos,
+      como_se_inicia:      comoSeInicia,
+      categoria_id:        categoriaId || null,
+      es_gratuito:         gratuito,
+      requiere_turno:      requiereTurno,
+      modalidad_presencial: modPresencial,
+      modalidad_digital:    modDigital,
+      precio,
     };
     if (!id) body.slug = slug;
 

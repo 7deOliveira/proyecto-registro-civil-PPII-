@@ -1,6 +1,6 @@
 """
 Tests para la app 'turnos'.
-Cubre: disponibilidad de slots y creación de turnos por ciudadanos.
+Cubre: disponibilidad de slots, creación de turnos, correos y reprogramación.
 
 Ejecutar con:
     python manage.py test turnos
@@ -8,8 +8,10 @@ Ejecutar con:
 
 import json
 from datetime import date, timedelta
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
+from django.contrib.auth.models import User
+from django.core import mail
 from .models import Turno
 
 
@@ -173,3 +175,180 @@ class CrearTurnoTests(TestCase):
         response = self._post(self.datos_validos)
         self.assertNotEqual(response.status_code, 302)
         self.assertEqual(response.status_code, 200)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tests de correos y reprogramación
+# ─────────────────────────────────────────────────────────────────────────────
+
+_EMAIL_OVERRIDE = {
+    'AXES_ENABLED': False,
+    'EMAIL_BACKEND': 'django.core.mail.backends.locmem.EmailBackend',
+}
+
+
+@override_settings(**_EMAIL_OVERRIDE)
+class CorreoCancelacionTests(TestCase):
+    """Verifica que se envíe correo al cancelar un turno."""
+
+    def setUp(self):
+        self.client = Client()
+        self.staff = User.objects.create_user(
+            username='admin@test.com', password='Password123!', is_staff=True
+        )
+        self.turno = Turno.objects.create(
+            tramite='dni_nuevo',
+            nombre='Ana García',
+            dni='12345678',
+            email='ana@test.com',
+            telefono='3814000000',
+            direccion='Av. Belgrano 100',
+            fecha=proximo_dia_habil(),
+            hora='08:00',
+            estado='pendiente',
+        )
+
+    def _cambiar_estado(self, estado):
+        return self.client.post(
+            reverse('api_cambiar_estado', args=[self.turno.id]),
+            data=json.dumps({'estado': estado}),
+            content_type='application/json',
+        )
+
+    def test_cancelar_envia_correo(self):
+        """Al cancelar un turno debe enviarse un correo al ciudadano."""
+        self.client.force_login(self.staff)
+        self._cambiar_estado('cancelado')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('cancelado', mail.outbox[0].subject.lower())
+        self.assertEqual(mail.outbox[0].to, ['ana@test.com'])
+
+    def test_correo_cancelacion_contiene_numero_turno(self):
+        self.client.force_login(self.staff)
+        self._cambiar_estado('cancelado')
+        self.assertIn(self.turno.numero_turno, mail.outbox[0].body)
+
+    def test_asistio_no_envia_correo(self):
+        """Marcar como 'asistio' NO debe enviar correo."""
+        self.client.force_login(self.staff)
+        self._cambiar_estado('asistio')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_no_asistio_no_envia_correo(self):
+        self.client.force_login(self.staff)
+        self._cambiar_estado('no_asistio')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_cancelar_requiere_autenticacion(self):
+        response = self._cambiar_estado('cancelado')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(mail.outbox), 0)
+
+
+@override_settings(**_EMAIL_OVERRIDE)
+class ReprogramarTurnoTests(TestCase):
+    """Verifica el endpoint POST /api/turnos/<id>/reprogramar/."""
+
+    def setUp(self):
+        self.client = Client()
+        self.staff = User.objects.create_user(
+            username='admin@test.com', password='Password123!', is_staff=True
+        )
+        self.fecha_original = proximo_dia_habil()
+        self.turno = Turno.objects.create(
+            tramite='dni_nuevo',
+            nombre='Luis Torres',
+            dni='87654321',
+            email='luis@test.com',
+            telefono='3814111111',
+            direccion='Av. Libertad 200',
+            fecha=self.fecha_original,
+            hora='08:00',
+            estado='pendiente',
+        )
+        # Nueva fecha hábil distinta a la original
+        d = self.fecha_original + timedelta(days=1)
+        while d.weekday() >= 5:
+            d += timedelta(days=1)
+        self.nueva_fecha = d
+
+    def _reprogramar(self, fecha, hora):
+        return self.client.post(
+            reverse('api_reprogramar_turno', args=[self.turno.id]),
+            data=json.dumps({'fecha': fecha, 'hora': hora}),
+            content_type='application/json',
+        )
+
+    def test_reprogramar_exitoso_cambia_fecha_y_hora(self):
+        self.client.force_login(self.staff)
+        response = self._reprogramar(self.nueva_fecha.isoformat(), '09:00')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json().get('ok'))
+        self.turno.refresh_from_db()
+        self.assertEqual(self.turno.fecha, self.nueva_fecha)
+        self.assertEqual(self.turno.hora.strftime('%H:%M'), '09:00')
+
+    def test_reprogramar_resetea_estado_a_pendiente(self):
+        """Un turno reprogramado debe quedar en estado 'pendiente'."""
+        self.turno.estado = 'no_asistio'
+        self.turno.save()
+        self.client.force_login(self.staff)
+        self._reprogramar(self.nueva_fecha.isoformat(), '09:00')
+        self.turno.refresh_from_db()
+        self.assertEqual(self.turno.estado, 'pendiente')
+
+    def test_reprogramar_envia_correo(self):
+        self.client.force_login(self.staff)
+        self._reprogramar(self.nueva_fecha.isoformat(), '09:00')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('reprogramado', mail.outbox[0].subject.lower())
+        self.assertEqual(mail.outbox[0].to, ['luis@test.com'])
+
+    def test_correo_incluye_fecha_anterior_y_nueva(self):
+        self.client.force_login(self.staff)
+        self._reprogramar(self.nueva_fecha.isoformat(), '09:00')
+        cuerpo = mail.outbox[0].body
+        self.assertIn(self.fecha_original.strftime('%d/%m/%Y'), cuerpo)
+        self.assertIn(self.nueva_fecha.strftime('%d/%m/%Y'), cuerpo)
+
+    def test_error_si_fecha_no_habil(self):
+        self.client.force_login(self.staff)
+        fin_semana = proximo_fin_de_semana()
+        response = self._reprogramar(fin_semana.isoformat(), '09:00')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.json())
+
+    def test_error_si_hora_invalida(self):
+        self.client.force_login(self.staff)
+        response = self._reprogramar(self.nueva_fecha.isoformat(), '14:00')
+        self.assertEqual(response.status_code, 400)
+
+    def test_error_si_slot_ocupado(self):
+        """No se puede reprogramar a un slot ya ocupado por otro turno."""
+        Turno.objects.create(
+            tramite='pasaporte',
+            nombre='Otro Ciudadano',
+            dni='11111111',
+            email='otro@test.com',
+            telefono='3814999999',
+            direccion='Calle Falsa 123',
+            fecha=self.nueva_fecha,
+            hora='09:00',
+            estado='pendiente',
+        )
+        self.client.force_login(self.staff)
+        response = self._reprogramar(self.nueva_fecha.isoformat(), '09:00')
+        self.assertEqual(response.status_code, 400)
+
+    def test_reprogramar_requiere_autenticacion(self):
+        response = self._reprogramar(self.nueva_fecha.isoformat(), '09:00')
+        self.assertEqual(response.status_code, 302)
+
+    def test_error_si_turno_no_existe(self):
+        self.client.force_login(self.staff)
+        response = self.client.post(
+            reverse('api_reprogramar_turno', args=[99999]),
+            data=json.dumps({'fecha': self.nueva_fecha.isoformat(), 'hora': '09:00'}),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 404)

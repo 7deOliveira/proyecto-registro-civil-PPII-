@@ -4,8 +4,10 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from .models import Turno
+from django.shortcuts import get_object_or_404
 from django.db.models import Count
+from .models import Turno
+from .emails import enviar_cancelacion_turno, enviar_reprogramacion_turno
 
 # ── Configuración ──
 MAX_POR_HORARIO = 1
@@ -192,6 +194,10 @@ def cambiar_estado(request, turno_id):
             turno.atendido_por = request.user
         turno.save()
 
+        # Notificar al ciudadano si el turno fue cancelado
+        if estado == 'cancelado':
+            enviar_cancelacion_turno(turno)
+
         return JsonResponse({'ok': True, 'estado': estado})
 
     except Turno.DoesNotExist:
@@ -199,6 +205,65 @@ def cambiar_estado(request, turno_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
+@login_required
+@require_POST
+def reprogramar_turno(request, turno_id):
+    """Permite al personal reprogramar fecha y hora de un turno existente."""
+    turno = get_object_or_404(Turno, id=turno_id)
+    try:
+        data          = json.loads(request.body)
+        nueva_fecha_str = data.get('fecha', '').strip()
+        nueva_hora_str  = data.get('hora', '').strip()
+
+        if not nueva_fecha_str or not nueva_hora_str:
+            return JsonResponse({'error': 'Fecha y hora son obligatorias.'}, status=400)
+
+        try:
+            nueva_fecha = date.fromisoformat(nueva_fecha_str)
+            nueva_hora  = datetime.strptime(nueva_hora_str, '%H:%M').time()
+        except ValueError:
+            return JsonResponse({'error': 'Formato de fecha u hora inválido.'}, status=400)
+
+        if not es_habil(nueva_fecha):
+            return JsonResponse({'error': 'La fecha seleccionada no es hábil.'}, status=400)
+
+        if nueva_hora_str not in SLOTS:
+            return JsonResponse({'error': 'El horario seleccionado no es válido.'}, status=400)
+
+        # Verificar disponibilidad excluyendo el turno actual
+        ocupado = Turno.objects.filter(
+            fecha=nueva_fecha,
+            hora=nueva_hora,
+            estado__in=['pendiente', 'asistio'],
+        ).exclude(id=turno_id).count()
+
+        if ocupado >= MAX_POR_HORARIO:
+            return JsonResponse(
+                {'error': 'Ese horario ya no está disponible. Elegí otro.'}, status=400
+            )
+
+        # Guardar valores anteriores para el correo
+        fecha_anterior = turno.fecha
+        hora_anterior  = turno.hora
+
+        turno.fecha  = nueva_fecha
+        turno.hora   = nueva_hora
+        turno.estado = 'pendiente'   # Vuelve a pendiente tras reprogramación
+        turno.save()
+
+        # Notificar al ciudadano
+        enviar_reprogramacion_turno(turno, fecha_anterior, hora_anterior)
+
+        return JsonResponse({
+            'ok':   True,
+            'fecha': nueva_fecha_str,
+            'hora':  nueva_hora_str,
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 @login_required
 def estadisticas(request):
     from datetime import date, timedelta
