@@ -22,7 +22,7 @@ def format_fecha_publica(fecha):
 
 def get_imagen_url(noticia, request):
     if noticia.imagen:
-        return request.build_absolute_uri(noticia.imagen.url)
+        return noticia.imagen.url
     return IMAGEN_DEFAULT
 
 
