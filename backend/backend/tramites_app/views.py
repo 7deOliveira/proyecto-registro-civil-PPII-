@@ -15,6 +15,7 @@ def lista_tramites(request):
         tramites_pub = cat.tramites.filter(estado='publicado')
         if tramites_pub.exists():
             resultado.append({
+                'id':       cat.id,
                 'nombre':   cat.nombre,
                 'icono':    cat.icono,
                 'tramites': list(tramites_pub.values('id', 'nombre', 'descripcion', 'slug', 'icono'))

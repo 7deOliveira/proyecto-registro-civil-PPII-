@@ -8,7 +8,7 @@ from .models import Turno
 from django.db.models import Count
 
 # ── Configuración ──
-MAX_POR_HORARIO = 2
+MAX_POR_HORARIO = 1
 MAX_TURNOS_DIA  = 20
 HORA_INICIO     = 8
 HORA_FIN        = 12

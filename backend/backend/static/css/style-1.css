@@ -843,15 +843,53 @@ footer a i { margin-right: 6px; }
   font-size: 22px;
 }
 
+/* ── FAQ ── */
+.faq-item {
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.faq-item .accordion-button {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rc-dark);
+  background: #fff;
+  padding: 16px 20px;
+}
+
+.faq-item .accordion-button:not(.collapsed) {
+  color: var(--rc-red);
+  background: rgba(200,16,46,.04);
+  box-shadow: none;
+}
+
+.faq-item .accordion-button::after {
+  filter: none;
+}
+
+.faq-item .accordion-button:not(.collapsed)::after {
+  filter: invert(18%) sepia(97%) saturate(2472%) hue-rotate(337deg);
+}
+
+.faq-body {
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.8;
+  color: #444;
+  padding: 4px 20px 20px;
+}
+
 /* ═══════════════════════════════════════════════════
   RESPONSIVE
    ═══════════════════════════════════════════════════ */
 
-/* ── Desktop grande — expandir el wrapper ── */
+/* ── Desktop grande ── */
 @media (min-width: 1200px) {
   .page-wrapper { max-width: 1140px; }
 }
-
 @media (min-width: 1400px) {
   .page-wrapper { max-width: 1320px; }
 }
@@ -864,16 +902,32 @@ footer a i { margin-right: 6px; }
 
 /* ── Mobile ── */
 @media (max-width: 767px) {
-  .page-wrapper { max-width: 100%; box-shadow: none; }
-  .page-content { padding: 14px 14px 28px; }
 
   /* Navbar */
   .navbar-rc {
-    padding: 0 16px;
+    padding: 0 0 0 12px;
     justify-content: space-between;
+    display: flex;
+    align-items: center;
   }
-  #btn-menu { display: block !important; }
-  .logo-ministerio-wrap { display: none; }
+  .navbar-rc > a:first-child { flex-shrink: 0; }
+
+  /* Texto REGISTRO CIVIL — visible y pequeño */
+  .navbar-brand-text { display: block !important; }
+  .navbar-brand-text div:first-child { font-size: 12px; letter-spacing: 0.5px; }
+  .navbar-brand-text div:last-child  { font-size: 9px;  letter-spacing: 1px; }
+
+  /* Hamburguesa — pegado al borde derecho */
+  #btn-menu {
+    display: block !important;
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 4px 0;
+    margin-right: 0;
+  }
+
+  /* Logo ministerio */
+  .logo-ministerio-wrap   { display: none; }
   .logo-ministerio-mobile { display: flex; }
 
   /* Menú desplegable */
@@ -881,9 +935,7 @@ footer a i { margin-right: 6px; }
     display: none;
     flex-direction: column;
     position: absolute;
-    top: 68px;
-    left: 0;
-    right: 0;
+    top: 68px; left: 0; right: 0;
     background: #fff;
     border-bottom: 3px solid var(--rc-red);
     box-shadow: 0 4px 12px rgba(0,0,0,.12);
@@ -898,27 +950,22 @@ footer a i { margin-right: 6px; }
     border-bottom: 1px solid #f5f5f5;
   }
 
+  /* Contenido */
+  .page-content { padding: 14px 14px 28px; }
+
   /* Carrusel */
   .carousel-rc .carousel-item { padding: 18px 16px; min-height: 110px; }
+  .carousel-rc .carousel-item .carousel-slide-content { min-height: 110px; padding: 18px 16px; }
   .carousel-text h3 { font-size: 18px; }
   .carousel-icon-circle { width: 56px; height: 56px; font-size: 24px; }
   .carousel-slide-content { gap: 12px; }
 
-  /* Cards de trámites en listado */
-  .tramite-item-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 14px;
-  }
-  .tramite-item-card .btn-rc {
-    align-self: stretch;
-    text-align: center;
-    width: 100%;
-    margin-top: 8px;
-  }
+  /* Cards de trámites */
+  .tramite-item-card { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
+  .tramite-item-card .btn-rc { align-self: stretch; text-align: center; width: 100%; margin-top: 8px; }
+  .tramite-item-desc { white-space: normal; overflow: visible; }
 
-  /* Cards de servicios en inicio */
+  /* Cards de servicios */
   .service-card { padding: 20px 10px 16px; }
   .service-card .svc-icon { font-size: 36px; margin-bottom: 10px; }
   .service-card .svc-label { font-size: 11px; letter-spacing: 1.5px; }
@@ -926,11 +973,15 @@ footer a i { margin-right: 6px; }
   /* Footer */
   footer { padding: 24px 14px 14px; }
   .footer-bottom { font-size: 10px; }
+
+  /* Modal turno */
+  .step-line { min-width: 20px; }
+  .turno-step-indicator span { font-size: 10px; }
 }
 
 /* ── Mobile chico ── */
 @media (max-width: 480px) {
-  .navbar-rc { padding: 0 12px; }
+  .navbar-rc { padding: 0 0 0 10px; }
   .page-content { padding: 12px 12px 24px; }
   .carousel-text h3 { font-size: 15px; }
   .carousel-icon-circle { width: 48px; height: 48px; font-size: 20px; }
